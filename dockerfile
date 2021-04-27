@@ -2,7 +2,7 @@ FROM python:3-slim AS build-env
 ADD . /app
 WORKDIR /app
 
-COPY src app
+COPY src /app
 COPY requirements.txt /temp/
 RUN pip install --target=/app -r /temp/requirements.txt
 RUN useradd -u 8877 gvauser
@@ -15,4 +15,5 @@ ENV PORT 8080
 
 #USER gvauser
 WORKDIR /app
+ENV PYTHONPATH /app
 CMD ["/app/main.py"]
