@@ -12,6 +12,6 @@ COPY --from=build-env /app /app
 
 EXPOSE 6147
 
-USER gvauser
+#USER gvauser
 WORKDIR /app
 CMD ["main.py"]
