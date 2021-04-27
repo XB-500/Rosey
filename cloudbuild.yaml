@@ -19,4 +19,5 @@ steps:
         "--platform",
         "managed",
         "--allow-unauthenticated",
+        
       ]

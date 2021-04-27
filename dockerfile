@@ -11,6 +11,7 @@ FROM gcr.io/distroless/python3
 COPY --from=build-env /app /app
 
 EXPOSE 6147
+ENV PORT 6147
 
 #USER gvauser
 WORKDIR /app
