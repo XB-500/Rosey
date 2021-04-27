@@ -8,9 +8,16 @@ set_log_name("ROSEY")
 logger = get_logger()
 app = FastAPI()
 
+@app.get("/health")
+def receive_health_check(req: Request):
+    try:
+        return {"status": "okay"}, 200
+    except:
+        return {"status": "failed"}, 500
+
 
 @app.post("/hook")
-def recWebHook(req: Request):
+def receive_web_hook(req: Request):
     try:
         body = req.json()
         
