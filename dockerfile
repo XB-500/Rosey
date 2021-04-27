@@ -3,9 +3,9 @@ ADD . /app
 WORKDIR /app
 
 COPY src /app
-COPY requirements.txt /temp/
-RUN pip install --target=/app -r /temp/requirements.txt
-RUN useradd -u 8877 gvauser
+COPY requirements.txt .
+RUN pip install --target=/app -r ./requirements.txt
+#RUN useradd -u 8877 gvauser
 
 FROM gcr.io/distroless/python3
 COPY --from=build-env /app /app
