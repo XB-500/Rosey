@@ -10,8 +10,8 @@ RUN useradd -u 8877 gvauser
 FROM gcr.io/distroless/python3
 COPY --from=build-env /app /app
 
-EXPOSE 6147
-ENV PORT 6147
+EXPOSE 8080
+ENV PORT 8080
 
 #USER gvauser
 WORKDIR /app
