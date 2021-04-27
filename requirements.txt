@@ -2,3 +2,5 @@ uvicorn
 fastapi
 pydantic
 mabel
+ujson
+orjson
