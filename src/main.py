@@ -3,6 +3,7 @@ from fastapi import FastAPI  # type:ignore
 from fastapi.responses import UJSONResponse  # type:ignore
 from fastapi import Request
 from mabel.logging import get_logger, set_log_name
+from mabel.data.formats import json
 
 set_log_name("ROSEY")
 logger = get_logger()
@@ -17,15 +18,23 @@ def receive_health_check(req: Request):
 
 
 @app.post("/hook")
-def receive_web_hook(req: Request):
+async def receive_web_hook(request: Request):
+
+    request_id = -1
+    
     try:
-        body = req.json()
-        
-        github_event = req.headers.get("X-Github-Event")
+
+        body = b''
+        async for chunk in request.stream():
+            body += chunk
 
         request_id = abs(hash(body))
+        body = json.parse(body)
+        
+        github_event = req.headers.get("X-Github-Event")
         logger.debug(F"Started ID: {request_id} - {github_event}")
 
+        # default message
         message = f"Event Received {github_event} \n\n {body}"
 
         if github_event == "star":  # check if the event is a star
