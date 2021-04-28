@@ -36,24 +36,13 @@ async def receive_web_hook(request: Request):
         # default message
         message = f"Unhandled Event Received `{github_event}`"
 
-        if github_event == "star":  # check if the event is a star
-            nos_stars = json_object["repository"]["stargazers_count"]
-            starrer_username = json_object["sender"]["login"]
-            repo_url = json_object["repository"]["html_url"]
-            repo_name = json_object["repository"]["name"]
-            message = f"{starrer_username} has starred the [{repo_name}]({repo_url}). \n\n The Total Stars are {nos_stars}"
+        if github_event == 'push': #
 
-        elif github_event == "pull_request":  # check if event is a pull request
-            pr_number = json_object["number"]
-            if json_object["pull_request"]["merged"] == True:
-                pr_action = "merged"
-            pr_action = json_object["action"]
-            pr_title = json_object["pull_request"]["title"]
-            pr_desc = json_object["pull_request"]["body"]
-            pr_login = json_object["sender"]["login"]
-            pr_login_url = json_object["sender"]["html_url"]
-            pr_url = json_object["pull_request"]["html_url"]
-            message = f"Pull Request([{pr_number}]({pr_url})) {pr_action} by [{pr_login}]({pr_login_url}).\n\n Title: *{pr_title}* \n\n Description: **{pr_desc}**"
+            submitter_email = data.get('pusher', {}).get('email', {})
+            submitter_user = data.get('pusher', {}).get('name', {})
+            branch = data.get('ref', '').split('/').pop()
+
+            message = f"User {submitter_user} ({submitter_email}) pushed to branch {branch}"
 
         logger.info(message)
     
