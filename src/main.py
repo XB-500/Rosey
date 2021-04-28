@@ -68,4 +68,4 @@ async def receive_web_hook(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=os.environ.get('PORT', 8080))
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get('PORT', 8080)))
