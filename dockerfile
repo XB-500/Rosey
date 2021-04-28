@@ -10,6 +10,6 @@ EXPOSE 8080
 ENV PORT 8080
 
 #USER gvauser
-#WORKDIR /app
-#ENV PYTHONPATH /app
-CMD ["python", "/app/main.py"]
+WORKDIR /app/src
+ENV PYTHONPATH /app/src
+CMD ["python", "/app/src/main.py"]
