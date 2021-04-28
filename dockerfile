@@ -13,4 +13,4 @@ ENV PORT 8080
 USER gvauser
 WORKDIR /app
 ENV PYTHONPATH /app
-CMD ["main.py"]
+CMD ["/app/main.py"]
