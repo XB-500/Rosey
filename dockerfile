@@ -1,19 +1,16 @@
-FROM python:3-slim AS build-env
+FROM python:3-slim
 ADD . /app
 WORKDIR /app
 
 COPY src /app
 COPY requirements.txt .
-RUN pip install --target=/app -r ./requirements.txt
-#RUN useradd -u 8877 gvauser
-
-FROM gcr.io/distroless/python3
-COPY --from=build-env /app /app
+RUN pip install -r ./requirements.txt
+RUN useradd -u 8877 gvauser
 
 EXPOSE 8080
 ENV PORT 8080
 
-#USER gvauser
+USER gvauser
 WORKDIR /app
 ENV PYTHONPATH /app
 CMD ["/app/main.py"]
