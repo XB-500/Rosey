@@ -25,7 +25,8 @@ def receive_web_hook(req: Request):
 
         request_id = abs(hash(body))
         logger.debug(F"Started ID: {request_id} - {github_event}")
-        
+
+        message = f"Event Received {github_event} \n\n {body}"
 
         if github_event == "star":  # check if the event is a star
             nos_stars = body["repository"]["stargazers_count"]
@@ -45,7 +46,7 @@ def receive_web_hook(req: Request):
             pr_login_url = body["sender"]["html_url"]
             pr_url = body["pull_request"]["html_url"]
             message = f"Pull Request([{pr_number}]({pr_url})) {pr_action} by [{pr_login}]({pr_login_url}).\n\n Title: *{pr_title}* \n\n Description: **{pr_desc}**"
-            
+
         logger.info(message)
     
     except Exception as err:
