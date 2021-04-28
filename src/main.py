@@ -7,6 +7,7 @@ from mabel.data.formats import json
 
 set_log_name("ROSEY")
 logger = get_logger()
+get_logger().setLevel(15)
 app = FastAPI()
 
 @app.get("/health")
@@ -24,36 +25,33 @@ async def receive_web_hook(request: Request):
     
     try:
 
-        body = b''
-        async for chunk in request.stream():
-            body += chunk
+        json_object = await request.json()
 
-        request_id = abs(hash(body))
-        body = json.parse(body)
+        request_id = abs(hash(json.serialize(json_object)))
         
-        github_event = req.headers.get("X-Github-Event")
+        github_event = request.headers.get("X-Github-Event")
         logger.debug(F"Started ID: {request_id} - {github_event}")
 
         # default message
-        message = f"Event Received {github_event} \n\n {body}"
+        message = f"Unhandled Event Received `{github_event}`"
 
         if github_event == "star":  # check if the event is a star
-            nos_stars = body["repository"]["stargazers_count"]
-            starrer_username = body["sender"]["login"]
-            repo_url = body["repository"]["html_url"]
-            repo_name = body["repository"]["name"]
+            nos_stars = json_object["repository"]["stargazers_count"]
+            starrer_username = json_object["sender"]["login"]
+            repo_url = json_object["repository"]["html_url"]
+            repo_name = json_object["repository"]["name"]
             message = f"{starrer_username} has starred the [{repo_name}]({repo_url}). \n\n The Total Stars are {nos_stars}"
 
         elif github_event == "pull_request":  # check if event is a pull request
-            pr_number = body["number"]
-            if body["pull_request"]["merged"] == True:
+            pr_number = json_object["number"]
+            if json_object["pull_request"]["merged"] == True:
                 pr_action = "merged"
-            pr_action = body["action"]
-            pr_title = body["pull_request"]["title"]
-            pr_desc = body["pull_request"]["body"]
-            pr_login = body["sender"]["login"]
-            pr_login_url = body["sender"]["html_url"]
-            pr_url = body["pull_request"]["html_url"]
+            pr_action = json_object["action"]
+            pr_title = json_object["pull_request"]["title"]
+            pr_desc = json_object["pull_request"]["body"]
+            pr_login = json_object["sender"]["login"]
+            pr_login_url = json_object["sender"]["html_url"]
+            pr_url = json_object["pull_request"]["html_url"]
             message = f"Pull Request([{pr_number}]({pr_url})) {pr_action} by [{pr_login}]({pr_login_url}).\n\n Title: *{pr_title}* \n\n Description: **{pr_desc}**"
 
         logger.info(message)
