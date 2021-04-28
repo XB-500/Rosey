@@ -4,3 +4,4 @@ pydantic
 mabel
 ujson
 orjson
+requests
