@@ -4,6 +4,6 @@
     "classification": "PRIVATE",
     "config": {
         "target_project": "mabel",
-        "target_dataset": "01_raw/GITHUB/GITHUB_HOOKS"
+        "target_dataset": "01_raw/GITHUB/GITHUB_HOOKS/s"
     }
 }
