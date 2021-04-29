@@ -48,9 +48,9 @@ async def receive_web_hook(request: Request):
 
         if github_event == 'push': #
 
-            submitter_email = data.get('pusher', {}).get('email', {})
-            submitter_user = data.get('pusher', {}).get('name', {})
-            branch = data.get('ref', '').split('/').pop()
+            submitter_email = json_object.get('pusher', {}).get('email', {})
+            submitter_user = json_object.get('pusher', {}).get('name', {})
+            branch = json_object.get('ref', '').split('/').pop()
 
             message = f"User {submitter_user} ({submitter_email}) pushed to branch {branch}"
 
