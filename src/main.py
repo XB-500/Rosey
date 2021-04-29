@@ -1,15 +1,21 @@
 import os
 import uvicorn
+from internals.flows.store_message_flow import build_flow_store_messages
 from fastapi import FastAPI, HTTPException  # type:ignore
 from fastapi.responses import UJSONResponse  # type:ignore
 from fastapi import Request
 from mabel.logging import get_logger, set_log_name
 from mabel.data.formats import json
+from mabel.utils.common import build_context
+
 
 set_log_name("ROSEY")
 logger = get_logger()
-get_logger().setLevel(15)
+
 app = FastAPI()
+
+context = build_context()
+
 
 @app.get("/health")
 def receive_health_check(req: Request):
@@ -35,6 +41,10 @@ async def receive_web_hook(request: Request):
 
         # default message
         message = f"Unhandled Event Received `{github_event}`"
+
+        # run the flow to store the payloads
+        with build_flow_store_messages(context) as runner:
+            runner(json_object)
 
         if github_event == 'push': #
 

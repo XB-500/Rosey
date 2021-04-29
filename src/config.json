@@ -1,0 +1,9 @@
+{
+    "table_name": "GITHUB_HOOKS",
+    "description": "Payloads from GitHub webhooks",
+    "classification": "PRIVATE",
+    "config": {
+        "target_project": "mabel",
+        "target_dataset": "01_raw/GITHUB/GITHUB_HOOKS"
+    }
+}
