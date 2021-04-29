@@ -3,14 +3,14 @@ from mabel.operators.google import GoogleStorageBatchWriterOperator
 from typing import Optional
 
 
-def build_flow_store_messages(config: Optional[dict] = None):
+def build_flow_store_messages(context: Optional[dict] = None):
 
-    if not config:
-        config = {}
+    if not context:
+        context = {}
 
     store = GoogleStorageBatchWriterOperator(
-            project=config.get('target_project'),
-            dataset=config.get('target_dataset')
+            project=context['config'].get('target_project'),
+            dataset=context['config'].get('target_dataset')
         )
     end = EndOperator()
 
