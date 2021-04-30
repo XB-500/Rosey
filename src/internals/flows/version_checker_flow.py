@@ -1,4 +1,4 @@
-from mabel.operators import EndOperator
+from mabel.operators import EndOperator    # type: ignore
 
 VERSION_FILE_URL = "https://raw.githubusercontent.com/joocer/mabel/{branch}/mabel/version.py"
 
