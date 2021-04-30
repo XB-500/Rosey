@@ -1,6 +1,8 @@
-# https://github.com/googleapis/python-tasks
+"""
+Google Cloud Platform: CloudTasks Adapter
 
-
+https://github.com/googleapis/python-tasks
+"""
 from google.cloud import tasks_v2  # type: ignore
 from google.protobuf import timestamp_pb2  # type: ignore
 from mabel.logging import get_logger  # type: ignore
@@ -12,28 +14,48 @@ from pydantic import BaseModel
 from typing import Optional, Union
 
 
-class CloudTasksModel(BaseModel):
+
+class CloudTasksQueueLocationModel(BaseModel):
     project: str
-    queue_name: str
     location: str = 'europe'
+
+class CloudTasksQueueModel(CloudTasksQueueLocationModel):
+    queue_name: str
+
+class CloudTasksTaskModel(CloudTasksQueueModel):
+    """
+    Cloud Tasks Task Model  
+
+    Parameters:
+        project: string
+        location: string
+        queue_name: string
+        target_url: string
+        payload: dictionary or string (optional)
+        in_seconds: integer (optional)
+        task_name: string (optional)
+    """
     target_url: str = 'http:s//abc.com/a'
     payload: Optional[Union[str,dict]]
     in_seconds: Optional[int] = None
     task_name: Optional[str] = None
 
-class CompletionSignal(CloudTasksModel):
+class CompletionSignal(CloudTasksTaskModel):
     pass
+
+
 
 
 class CloudTasksAdapter():
 
     @staticmethod
-    def create_http_task(task: CloudTasksModel):
+    def create_http_task(
+            task: CloudTasksTaskModel):
         """
         Create a task for a given queue with an arbitrary payload.
 
         Paramters:
-            task: CloudTasksModel (or CompletionSignal)
+            task: CloudTasksTaskModel (or CompletionSignal)
                 The details of the request
 
         Returns:
@@ -84,7 +106,8 @@ class CloudTasksAdapter():
 
 
     @staticmethod
-    def create_queue(project, queue_name, location):
+    def create_queue(
+            queue: CloudTasksQueueModel):
         """
         Create a task queue.
         """
@@ -104,45 +127,38 @@ class CloudTasksAdapter():
 
 
     @staticmethod
-    def list_queues(project, location):
+    def list_queues(
+            location: CloudTasksQueueLocationModel):
         """
         List all task queues.
         """
         client = tasks_v2.CloudTasksClient()
-
         # Construct the fully qualified location path.
-        parent = f"projects/{project}/locations/{location}"
-
+        parent = f"projects/{location.project}/locations/{location.location}"
         # Use the client to obtain the queues.
-        response = client.list_queues(request={"parent": parent})
-
-        # Print the results.
-        num_results = 0
-        for queue in response:
-            num_results = num_results + 1
-            print(queue.name)
-
-        if num_results == 0:
-            print("No queues found!")
+        yield from client.list_queues(request={"parent": parent})
 
 
     @staticmethod
-    def queue_length():
+    def list_queue_items(
+            queue: CloudTasksQueue):
+        """
+        Retreive the items from a queue.
+
+        Paramters:
+            queue: CloudTasksQueue
+
+        Yields:
+            task
+        """
         client = tasks_v2.CloudTasksClient()
 
         # Construct the fully qualified queue name.
         parent = client.queue_path(
-                task.project,
-                task.location,
-                task.queue_name)
-
-        # Iterate over all results
-        for element in client.list_tasks(parent):
-            # process element
-            pass
+                queue.project,
+                queue.location,
+                queue.queue_name)
 
         # Iterate over results one page at a time
         for page in client.list_tasks(parent).pages:
-            for element in page:
-                # process element
-                pass
+            yield from page
