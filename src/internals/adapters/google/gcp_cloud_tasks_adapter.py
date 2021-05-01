@@ -1,6 +1,9 @@
 """
 Google Cloud Platform: CloudTasks Adapter
 
+An interface to CloudTasks on GCP to assist with performing common
+functionality with this component.
+
 Derived from the examples on:
     https://github.com/googleapis/python-tasks
 
@@ -17,17 +20,21 @@ from pydantic import BaseModel
 from typing import Optional, Union
 
 
-
+# The models are pydantic data models:
+# https://pydantic-docs.helpmanual.io/usage/models/
+# The models inherit from each other in turn, adding more fields as they go.
 class CloudTasksQueueLocationModel(BaseModel):
     project: str
     location: str = 'europe-west2'
 
+
 class CloudTasksQueueModel(CloudTasksQueueLocationModel):
     queue_name: str
 
+
 class CloudTasksTaskModel(CloudTasksQueueModel):
     """
-    Cloud Tasks Task Model  
+    Cloud Tasks Task Model
 
     Parameters:
         project: string
@@ -39,9 +46,10 @@ class CloudTasksTaskModel(CloudTasksQueueModel):
         task_name: string (optional)
     """
     target_url: str = 'http:s//abc.com/a'
-    payload: Optional[Union[str,dict]]
+    payload: Optional[Union[str, dict]]
     in_seconds: Optional[int] = None
     task_name: Optional[str] = None
+
 
 class CompletionSignal(CloudTasksTaskModel):
     """
@@ -63,7 +71,7 @@ class CloudTasksAdapter():
                 The details of the request
 
         Returns:
-            Response Object
+            Task Object
         """
         client = tasks_v2.CloudTasksClient()
 
@@ -82,7 +90,7 @@ class CloudTasksAdapter():
         }
         if task.payload is not None:
             if isinstance(task.payload, dict):
-                payload = serialize(payload)
+                payload = serialize(task.payload)
                 cloud_task["http_request"]["headers"] = {"Content-type": "application/json"}
 
             # The API expects a payload of type bytes.
@@ -108,12 +116,18 @@ class CloudTasksAdapter():
         get_logger().debug("CloudTasks task created: {response.name}")
         return response
 
-
     @staticmethod
     def create_queue(
             queue: CloudTasksQueueModel):
         """
         Create a task queue.
+
+        Paramters:
+            queue: CloudTasksQueueModel
+                The details of the request
+
+        Returns:
+            Queue Object
         """
         client = tasks_v2.CloudTasksClient()
         # Construct the fully qualified location path.
@@ -124,12 +138,18 @@ class CloudTasksAdapter():
         response = client.create_queue(request={"parent": parent, "queue": task_queue})
         return response
 
-
     @staticmethod
     def list_queues(
             location: CloudTasksQueueLocationModel):
         """
         List all task queues.
+
+        Paramters:
+            location: CloudTasksQueueLocationModel
+                The details of the request
+
+        Yields:
+            Queue Object
         """
         client = tasks_v2.CloudTasksClient()
         # Construct the fully qualified location path.
@@ -137,12 +157,11 @@ class CloudTasksAdapter():
         # Use the client to obtain the queues.
         yield from client.list_queues(request={"parent": parent})
 
-
     @staticmethod
-    def list_queue_items(
+    def list_queued_tasks(
             queue: CloudTasksQueueModel):
         """
-        Retreive the items from a queue.
+        Retreive the tasks from a queue.
 
         Paramters:
             queue: CloudTasksQueue
@@ -152,7 +171,7 @@ class CloudTasksAdapter():
         """
         from google.cloud import tasks_v2beta3
         client = tasks_v2beta3.CloudTasksClient()
-        
+
         # Construct the fully qualified queue name.
         parent = client.queue_path(
                 queue.project,
@@ -160,6 +179,4 @@ class CloudTasksAdapter():
                 queue.queue_name)
 
         # Iterate over all results
-        for element in client.list_tasks(request={"parent": parent}):
-            # process element
-            yield element
+        yield from client.list_tasks(request={"parent": parent})
