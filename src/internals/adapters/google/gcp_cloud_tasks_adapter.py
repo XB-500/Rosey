@@ -1,15 +1,14 @@
 """
 Google Cloud Platform: CloudTasks Adapter
 
+Derived from the examples on:
 https://github.com/googleapis/python-tasks
 """
+import datetime
 from google.cloud import tasks_v2  # type: ignore
 from google.protobuf import timestamp_pb2  # type: ignore
 from mabel.logging import get_logger  # type: ignore
 from mabel.data.formats.json import serialize  # type: ignore
-import datetime
-
-
 from pydantic import BaseModel
 from typing import Optional, Union
 
@@ -41,9 +40,10 @@ class CloudTasksTaskModel(CloudTasksQueueModel):
     task_name: Optional[str] = None
 
 class CompletionSignal(CloudTasksTaskModel):
+    """
+    Alias for CloudTasksTaskModel
+    """
     pass
-
-
 
 
 class CloudTasksAdapter():
