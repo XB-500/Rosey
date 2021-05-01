@@ -1,6 +1,12 @@
 """
+Google Cloud Platform: Secrets Manager Adapter
 
-pip install google-cloud-secret-manager
+Derived from the examples on:
+    https://github.com/googleapis/python-secret-manager
+
+requirements:
+    google-cloud-secret-manager
+    pydantic
 """
 from google.cloud import secretmanager
 from pydantic import BaseModel
@@ -17,10 +23,10 @@ class SecretsManagerSecretModel(BaseModel):
 class SecretsManagerAdapter():
 
     @staticmethod
-    def access_secret_version(
+    def retrieve_secret(
             secret: SecretsManagerSecretModel) -> str:
         client = secretmanager.SecretManagerServiceClient()
-        name = f"projects/{secret.project_id}/secrets/{secret.secret_id}/versions/{secret.version_id}"
+        name = f"projects/{secret.project}/secrets/{secret.secret_id}/versions/{secret.version_id}"
 
         # Access the secret
         response = client.access_secret_version(name=name)

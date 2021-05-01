@@ -2,7 +2,11 @@
 Google Cloud Platform: CloudTasks Adapter
 
 Derived from the examples on:
-https://github.com/googleapis/python-tasks
+    https://github.com/googleapis/python-tasks
+
+Requirements
+    google-cloud-tasks
+    pydantic
 """
 import datetime
 from google.cloud import tasks_v2  # type: ignore
