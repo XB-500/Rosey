@@ -11,13 +11,17 @@ Requirements
     google-cloud-tasks
     pydantic
 """
+try:
+    from google.cloud import tasks_v2  # type: ignore
+    from google.protobuf import timestamp_pb2  # type: ignore
+except ImportError:
+    tasks_v2 = None
 import datetime
-from google.cloud import tasks_v2  # type: ignore
-from google.protobuf import timestamp_pb2  # type: ignore
 from mabel.logging import get_logger  # type: ignore
 from mabel.data.formats.json import serialize  # type: ignore
-from pydantic import BaseModel
+from pydantic import BaseModel  # type:ignore
 from typing import Optional, Union
+from ...errors import MissingDependencyError
 
 
 # The models are pydantic data models:
@@ -45,7 +49,7 @@ class CloudTasksTaskModel(CloudTasksQueueModel):
         in_seconds: integer (optional)
         task_name: string (optional)
     """
-    target_url: str = 'http:s//abc.com/a'
+    target_url: str
     payload: Optional[Union[str, dict]]
     in_seconds: Optional[int] = None
     task_name: Optional[str] = None
@@ -53,9 +57,10 @@ class CloudTasksTaskModel(CloudTasksQueueModel):
 
 class CompletionSignal(CloudTasksTaskModel):
     """
-    Alias for CloudTasksTaskModel
+    Alias for CloudTasksTaskModel with some prefilled values
     """
-    pass
+    queue_name: str = "completion-signal"
+    target_url: str = "http://haka.gva/completion"
 
 
 class CloudTasksAdapter():
@@ -72,7 +77,14 @@ class CloudTasksAdapter():
 
         Returns:
             Task Object
+
+        Raises:
+            MissingDependencyError
+                When google.cloud.tasks_v2 isn't available
         """
+        if not tasks_v2:
+            raise MissingDependencyError("`google.cloud.tasks_v2` must be installed")
+
         client = tasks_v2.CloudTasksClient()
 
         # Construct the fully qualified queue name.
@@ -105,11 +117,11 @@ class CloudTasksAdapter():
             timestamp.FromDatetime(d)
 
             # Add the timestamp to the tasks.
-            cloud_task["schedule_time"] = timestamp
+            cloud_task["schedule_time"] = timestamp  # type:ignore
 
         if task.task_name is not None:
             # Add the name to tasks.
-            cloud_task["name"] = task.task_name
+            cloud_task["name"] = task.task_name  # type:ignore
 
         # Use the client to build and send the task.
         response = client.create_task(request={"parent": parent, "task": cloud_task})

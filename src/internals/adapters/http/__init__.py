@@ -1,0 +1,1 @@
+from .http_download_adapter import HttpDownloadAdapter

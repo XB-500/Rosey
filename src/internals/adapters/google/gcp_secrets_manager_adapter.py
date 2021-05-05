@@ -11,8 +11,12 @@ requirements:
     google-cloud-secret-manager
     pydantic
 """
-from google.cloud import secretmanager
-from pydantic import BaseModel
+try:
+    from google.cloud import secretmanager  # type:ignore
+except ImportError:
+    secretmanager = None
+from pydantic import BaseModel  # type:ignore
+from ...errors import MissingDependencyError
 
 
 class SecretsManagerSecretModel(BaseModel):
@@ -35,7 +39,14 @@ class SecretsManagerAdapter():
 
         Returns:
             String
+
+        Raises:
+            MissingDependencyError
+                When google.cloud.secretmanager isn't available
         """
+        if not secretmanager:
+            raise MissingDependencyError("`google.cloud.secretmanager` must be installed")
+
         client = secretmanager.SecretManagerServiceClient()
         name = f"projects/{secret.project}/secrets/{secret.secret_id}/versions/{secret.version_id}"
 
