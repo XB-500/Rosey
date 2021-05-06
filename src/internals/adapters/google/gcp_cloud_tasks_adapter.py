@@ -11,6 +11,7 @@ Requirements
     google-cloud-tasks
     pydantic
 """
+import os
 try:
     from google.cloud import tasks_v2  # type: ignore
     from google.protobuf import timestamp_pb2  # type: ignore
@@ -66,6 +67,12 @@ class CompletionSignal(CloudTasksTaskModel):
 class CloudTasksAdapter():
 
     @staticmethod
+    def _stubbed_create_task(
+            task: CloudTasksTaskModel):
+        print(task)
+        return None
+
+    @staticmethod
     def create_task(
             task: CloudTasksTaskModel):
         """
@@ -82,6 +89,11 @@ class CloudTasksAdapter():
             MissingDependencyError
                 When google.cloud.tasks_v2 isn't available
         """
+        # if the environment variables are set to stub cloud tasks, 
+        # output to the console instead of sending to cloud tasks
+        if os.environ.get('STUB_CLOUD_TASKS', False):
+            return CloudTasksAdapter._stubbed_create_task(task)
+
         if not tasks_v2:
             raise MissingDependencyError("`google.cloud.tasks_v2` must be installed")
 

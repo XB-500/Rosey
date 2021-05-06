@@ -11,6 +11,7 @@ requirements:
     google-cloud-secret-manager
     pydantic
 """
+import os
 try:
     from google.cloud import secretmanager  # type:ignore
 except ImportError:
@@ -26,6 +27,14 @@ class SecretsManagerSecretModel(BaseModel):
 
 
 class SecretsManagerAdapter():
+
+    @staticmethod
+    def _stubbed_retrieve_secret(
+            secret: SecretsManagerSecretModel) -> str:
+        """
+        Retrieve a Secret from the Environment Variables
+        """
+        return os.environ.get(secret.secret_id)
 
     @staticmethod
     def retrieve_secret(
@@ -44,6 +53,12 @@ class SecretsManagerAdapter():
             MissingDependencyError
                 When google.cloud.secretmanager isn't available
         """
+
+        # if the environment variables are set to stub the secrets manager, 
+        # retrieve the secret from the environment variables.
+        if os.environ.get('STUB_SECRETS_MANAGER', False):
+            return SecretsManagerAdapter._stubbed_retrieve_secret(secret)
+
         if not secretmanager:
             raise MissingDependencyError("`google.cloud.secretmanager` must be installed")
 
