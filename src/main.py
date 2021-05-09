@@ -17,12 +17,25 @@ app = FastAPI()
 context = build_context()
 
 
-@app.get("/health")
-def receive_health_check(req: Request):
+@app.get("/test")
+async def receive_test_request(repo: str):
+    request_id = -1
     try:
-        return {"status": "okay"}, 200
-    except:
-        raise HTTPException(status_code=500, detail="Not Okay")
+        json_object = await request.json()
+        request_id = abs(hash(json.serialize(json_object)))
+
+        # download repo
+        # run pytest
+        # if errors, raise issues
+
+    except Exception as err:
+        error_message = F"{type(err).__name__}: {err} (ID:{request_id})"
+        logger.error(error_message)
+        raise HTTPException(status_code=400, detail=error_message)
+    finally:
+        logger.debug(F"Finished ID:{request_id}")
+
+    return "okay"
 
 
 @app.post("/hook")
