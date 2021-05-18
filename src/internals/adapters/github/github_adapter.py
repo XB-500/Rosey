@@ -3,6 +3,7 @@ import requests
 import ujson as json
 from enum import Enum
 from pydantic import BaseModel
+from typing import Optional
 
 
 
@@ -10,10 +11,11 @@ class GitHubGroup(str, Enum):
     users = 'users'
     orgs = 'orgs'
 
-class GitHubPushFileModel(BaseModel):
-    file_name: str
+class GitHubFileModel(BaseModel):
+    file_path: str
+    owner: str
     repository_name: str
-    branch_name: str
+    branch_name: Optional[str]
     auth_token: str
 
 class GitHubListReposModel(BaseModel):
@@ -21,11 +23,10 @@ class GitHubListReposModel(BaseModel):
     name: str
     auth_token: str
 
-
 class GitHubAdapter():
 
     @staticmethod
-    def push_file(file_model: GitHubPushFileModel):
+    def push_file(file_model: GitHubFileModel):
         url = F"https://api.github.com/repos/{file_model.repository_name}/contents/{file_model.file_name}"
         base64content=base64.b64encode(open(file_model.file_name,"rb").read())
         data = requests.get(
@@ -53,10 +54,9 @@ class GitHubAdapter():
         return response
 
 
-    def get_file(urk, auth_token):
-        git_name = row['name']
-        url = (giturl + git_name + git_tail)
-        response = requests.get(url, auth=('access_token', access_token))
-        data = response.text
-
-        return data
+    def get_file(file_model: GitHubFileModel):
+        url = f"https://api.github.com/repos/{file_model.owner}/{file_model.repository_name}/contents/{file_model.file_path}"
+        response = requests.get(url, auth=('access_token', file_model.auth_token))
+        if response.status_code == 200:
+            return response.status_code, base64.b64decode(response.json().get('content', b''))
+        return response.status_code, b''

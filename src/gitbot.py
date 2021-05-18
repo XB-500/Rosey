@@ -1,49 +1,64 @@
 
-if __name__ == "__main__":
-    from mabel.utils.entropy import random_string
-    branch_name = 'rosey-' + random_string()
-    print(branch_name)
+from internals.adapters.github.github_adapter import GitHubFileModel, GitHubGroup
+
 
 if __name__ == "__main__":
 
     import os
     import glob
     from mabel.utils.entropy import random_string
+    from mabel.logging import get_logger, set_log_name
     from internals.adapters.http import HttpAdapter, GetRequestModel
-    from internals.adapters.github import GitHubAdapter, GitHubListReposModel
+    from internals.adapters.github import GitHubAdapter, GitHubListReposModel, GitHubFileModel
 
     import subprocess
     import shutil
 
-    TEMPLATE_REPO = "wasure-template"
+    ORG_NAME = "mabel-dev"
+    TEMPLATE_REPO = "container-template"
+    set_log_name("ROSEY")
+    AUTH = os.environ.get('GITHUB_TOKEN')
 
     shutil.rmtree('temp', ignore_errors=True)
     os.makedirs('temp', exist_ok=True)
-    subprocess.call(f'git clone https://github.com/joocer/{TEMPLATE_REPO}.git', shell=True, cwd='temp')
+    subprocess.call(f'git clone https://github.com/{ORG_NAME}/{TEMPLATE_REPO}.git', shell=True, cwd='temp')
 
 
     repos = GitHubListReposModel (
-        auth_token=os.environ.get('GITHUB_TOKEN'),
-        name='joocer'
+        auth_token=AUTH,
+        name=ORG_NAME,
+        classification=GitHubGroup.orgs
     )
 
     repo_list = GitHubAdapter.list_repos(repos).json()
+    get_logger().debug(F"found {len(repo_list)} repositories")
     for repo in repo_list:
-        url = F"https://raw.githubusercontent.com/{repo.get('full_name')}/main/TEMPLATE"
-        code, headers, content = HttpAdapter.get(GetRequestModel(url=url))
-        content = content.decode().strip()
-        if code == 200 and content.startswith(f"https://github.com/joocer/{TEMPLATE_REPO}"):
 
-            branch_name = 'rosey-' + random_string()
-            print(branch_name)
+        if repo['name'] == TEMPLATE_REPO:
+            continue
+
+        file = GitHubFileModel(
+            file_path = "TEMPLATE",
+            owner = ORG_NAME,
+            repository_name = repo.get('name'),
+            auth_token = AUTH
+        )
+        status, content = GitHubAdapter.get_file(file)
+        content = content.decode().strip()
+        print(status, content, repo.get('full_name'))
+        if status == 200 and content.startswith(f"https://github.com/{ORG_NAME}/{TEMPLATE_REPO}"):
+            get_logger().debug(F"`{repo.get('full_name')}` appears to be based on `{TEMPLATE_REPO}`")
+
+            branch_name = 'rosey-' + random_string(length=16)
 
             shutil.rmtree(F'temp/{repo.get("name")}', ignore_errors=True)
-            subprocess.call(F"git clone {repo.get('git_url')}", shell=True, cwd='temp')
+            authenticated_url = repo.get('clone_url', '').replace('https://', f'https://{AUTH}@')
+            subprocess.call(F"git clone {authenticated_url}", shell=True, cwd='temp')
 
             # open a '.templateignore'
             source_repo = glob.glob(f'temp/{TEMPLATE_REPO}/**')
             source_repo = [f[:len(f'temp/{TEMPLATE_REPO}/')] for f in source_repo]
-            target_repo = glob.glob(f'temp/{repo.get("name")}')
+            target_repo = glob.glob(f'temp/{repo.get("name")}/**')
             target_repo = [f[:len(f'temp/{repo.get("name")}')] for f in source_repo]
 
             for path in source_repo:
