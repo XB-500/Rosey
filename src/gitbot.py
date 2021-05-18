@@ -1,6 +1,7 @@
 
 from internals.adapters.github.github_adapter import GitHubFileModel, GitHubGroup
 
+IGNORE = ['README.md', 'requirements.txt', 'src\\main.py', 'src\\config.json', 'TEMPLATE', 'LICENSE', 'NOTICE']
 
 if __name__ == "__main__":
 
@@ -55,21 +56,33 @@ if __name__ == "__main__":
             authenticated_url = repo.get('clone_url', '').replace('https://', f'https://{AUTH}@')
             subprocess.call(F"git clone {authenticated_url}", shell=True, cwd='temp')
 
-            # open a '.templateignore'
-            source_repo = glob.glob(f'temp/{TEMPLATE_REPO}/**')
-            source_repo = [f[:len(f'temp/{TEMPLATE_REPO}/')] for f in source_repo]
-            target_repo = glob.glob(f'temp/{repo.get("name")}/**')
-            target_repo = [f[:len(f'temp/{repo.get("name")}')] for f in source_repo]
+            source_repo = glob.glob(f'temp/{TEMPLATE_REPO}/**', recursive=True)
+            source_repo = [f[len(f'temp/{TEMPLATE_REPO}/'):] for f in source_repo]
+            target_repo = glob.glob(f'temp/{repo.get("name")}/**', recursive=True)
+            target_repo = [f[len(f'temp/{repo.get("name")}'):] for f in target_repo]
 
             for path in source_repo:
 
-                print(f"looking at file {path}")
+                print(f"looking at path: {path}")
 
-                with open(f'{TEMPLATE_REPO}/{path}', 'rb') as f:
-                    source_file_contents = f.read()
+                if path in IGNORE:
+                    print('ignoring')
+                    continue
 
-                if path not in target_repo:
-                    print(f'I need to add file {path}')
+                if os.path.isfile(f'temp/{TEMPLATE_REPO}/{path}'):
+
+                    if not os.path.exists(f'temp/{repo.get("name")}/{path}'):
+                        print(f'I need to add file {path}')
+
+                    else:
+                        with open(f'temp/{TEMPLATE_REPO}/{path}', 'rb') as f:
+                            source_file_contents = f.read()
+                        with open(f'temp/{repo.get("name")}/{path}', 'rb') as f:
+                            target_file_contents = f.read()
+                        if source_file_contents != target_file_contents:
+                            print(f'I need to update {path}')
+                        else:
+                            print(f'{path} is okay')
                 
 
-            shutil.rmtree(F'temp/{repo.get("name")}', ignore_errors=True)
+#            shutil.rmtree(F'temp/{repo.get("name")}', ignore_errors=True)
