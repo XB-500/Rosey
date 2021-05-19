@@ -1,3 +1,3 @@
 # Rosey The Robot
 
-Rosey is a GitHub bot.
+I swear on my mother's rechargable batteries.

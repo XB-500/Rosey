@@ -1,4 +1,5 @@
 
+from typing import Optional
 from internals.adapters.github.github_adapter import GitHubFileModel, GitHubGroup
 
 IGNORE = ['README.md', 'requirements.txt', 'src\\main.py', 'src\\config.json', 'TEMPLATE', 'LICENSE', 'NOTICE']
@@ -26,7 +27,7 @@ if __name__ == "__main__":
 
 
     repos = GitHubListReposModel (
-        auth_token=AUTH,
+        authentication_token=AUTH,
         name=ORG_NAME,
         classification=GitHubGroup.orgs
     )
@@ -42,7 +43,7 @@ if __name__ == "__main__":
             file_path = "TEMPLATE",
             owner = ORG_NAME,
             repository_name = repo.get('name'),
-            auth_token = AUTH
+            authentication_token = AUTH
         )
         status, content = GitHubAdapter.get_file(file)
         content = content.decode().strip()
@@ -73,6 +74,17 @@ if __name__ == "__main__":
 
                     if not os.path.exists(f'temp/{repo.get("name")}/{path}'):
                         print(f'I need to add file {path}')
+                        with open(f'temp/{TEMPLATE_REPO}/{path}', 'rb') as f:
+                            source_file_contents = f.read()
+                        remote_file = GitHubFileModel(
+                            file_path = path,
+                            owner = ORG_NAME,
+                            repository_name = repo.get("name"), 
+                            branch_name = branch_name,
+                            authentication_token = AUTH,
+                            contents = source_file_contents
+                        )
+                        GitHubAdapter.push_file(remote_file)
 
                     else:
                         with open(f'temp/{TEMPLATE_REPO}/{path}', 'rb') as f:
@@ -80,9 +92,17 @@ if __name__ == "__main__":
                         with open(f'temp/{repo.get("name")}/{path}', 'rb') as f:
                             target_file_contents = f.read()
                         if source_file_contents != target_file_contents:
-                            print(f'I need to update {path}')
+                            remote_file = GitHubFileModel(
+                                file_path = path,
+                                owner = ORG_NAME,
+                                repository_name = repo.get("name"), 
+                                branch_name = branch_name,
+                                authentication_token = AUTH,
+                                contents = source_file_contents
+                            )
+                            GitHubAdapter.push_file(remote_file)
                         else:
                             print(f'{path} is okay')
                 
 
-#            shutil.rmtree(F'temp/{repo.get("name")}', ignore_errors=True)
+            shutil.rmtree(F'temp/{repo.get("name")}', ignore_errors=True)
