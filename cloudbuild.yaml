@@ -19,5 +19,6 @@ steps:
         "--platform",
         "managed",
         "--allow-unauthenticated",
-        
+        "--timeout",
+        "1740"
       ]
