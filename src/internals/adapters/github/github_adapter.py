@@ -28,6 +28,7 @@ class GitHubAdapter():
 
     @staticmethod
     def push_file(file_model: GitHubFileModel):
+        file_model.file_path = file_model.file_path.replace('\\', '/')
         url = F"https://api.github.com/repos/{file_model.owner}/{file_model.repository_name}/contents/{file_model.file_path}"
 
         payload = {}
@@ -40,11 +41,7 @@ class GitHubAdapter():
                 url,
                 data=json.dumps(payload),
                 headers={"Content-Type": "application/json", "Authorization": "token " + file_model.authentication_token})
-
-        print(resp)
-
         return resp
-
 
     @staticmethod
     def list_repos(repos: GitHubListReposModel):
@@ -61,12 +58,24 @@ class GitHubAdapter():
         return response.status_code, b''
 
     @staticmethod
-    def get_heads():
-        OWNER = "mabel-dev"
-        REPO = "mabel"
-        url = f"https://api.github.com/repos/{OWNER}/{REPO}/git/refs/heads"
-        response = requests.get(url)
-        print(response.json())
+    def get_branches(owner: str, repo: str, authentication_token:str):
+        url = f"https://api.github.com/repos/{owner}/{repo}/git/refs/heads"
+        response = requests.get(url, auth=('access_token', authentication_token))
+        return response.json()
 
-if __name__ == "__main__":
-    GitHubAdapter.get_heads()
+    @staticmethod
+    def create_branch(
+        owner: str,
+        repo: str,
+        branch_from: str = 'main',
+        branch_name: str = 'branch',
+        auth_token: str = ''
+    ):
+
+        branches = GitHubAdapter.get_branches(owner, repo, auth_token)
+        sha = [branch['object']['sha'] for branch in branches if branch['ref'] == f'refs/heads/{branch_from}'].pop()
+        url = f"https://api.github.com/repos/{owner}/{repo}/git/refs"
+        data = {"ref":f"refs/heads/{branch_name}", "sha":sha}
+        response = requests.post(url, data=json.dumps(data), auth=('access_token', auth_token))
+        print(response.status_code, response.text)
+        return True
