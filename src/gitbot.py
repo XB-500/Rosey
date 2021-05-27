@@ -26,12 +26,13 @@ if __name__ == "__main__":
     import subprocess
     import shutil
 
+    BOT_NAME = "rosey"
     ORG_NAME = "mabel-dev"
     TEMPLATE_REPO = "container-template"
-    set_log_name("ROSEY")
+    set_log_name(BOT_NAME)
     AUTH = os.environ.get('GITHUB_TOKEN')
 
-    tempory_folder = TemporaryDirectory(prefix='rosey')
+    tempory_folder = TemporaryDirectory(prefix=BOT_NAME)
     template_path = pathlib.Path(tempory_folder.name) / TEMPLATE_REPO
 
     print(tempory_folder.name)
@@ -65,14 +66,14 @@ if __name__ == "__main__":
         if status == 200 and content.startswith(f"https://github.com/{ORG_NAME}/{TEMPLATE_REPO}"):
             get_logger().debug(F"`{THIS_REPO}` appears to be based on `{TEMPLATE_REPO}`")
 
-            # does the repo already have a rosey branch?
+            # does the repo already have a bot branch?
             branches = GitHubAdapter.get_branches(ORG_NAME, THIS_REPO, AUTH)
             print(branches, type(branches))
-            if any(True for branch in branches if branch.get('ref').startswith('refs/heads/rosey')):
-                get_logger().debug(f"{THIS_REPO} already has a branch created by Rosey")
+            if any(True for branch in branches if branch.get('ref').startswith(f'refs/heads/{BOT_NAME}')):
+                get_logger().debug(f"{THIS_REPO} already has a branch created by {BOT_NAME}")
                 continue
 
-            branch_name = 'rosey-' + random_string(length=16)
+            branch_name = f'{BOT_NAME}-' + random_string(length=16)
             created_branch = False
 
             branch_path = pathlib.Path(tempory_folder.name) / THIS_REPO
