@@ -27,4 +27,4 @@ jobs:
 
       - name: Run Scanner
         run: |
-          docker run --rm -ti -v $PWD:/usr/src --link sonarqube newtmitch/sonar-scanner-alpine
+          docker run --rm -ti -v $GITHUB_WORKSPACE/src --link sonarqube newtmitch/sonar-scanner-alpine
