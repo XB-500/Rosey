@@ -31,6 +31,7 @@ if __name__ == "__main__":
     TEMPLATE_REPO = "container-template"
     set_log_name(BOT_NAME)
     AUTH = os.environ.get('GITHUB_TOKEN')
+    get_logger().setLevel(5)
 
     tempory_folder = TemporaryDirectory(prefix=BOT_NAME)
     template_path = pathlib.Path(tempory_folder.name) / TEMPLATE_REPO
@@ -45,7 +46,7 @@ if __name__ == "__main__":
     )
 
     repo_list = GitHubAdapter.list_repos(repos).json()
-    get_logger().debug(F"found {len(repo_list)} repositories")
+    get_logger().info(F"I found {len(repo_list)} repositories")
     for repo in repo_list:
 
         THIS_REPO = repo['name']
@@ -64,13 +65,13 @@ if __name__ == "__main__":
         content = content.decode().strip()
 
         if status == 200 and content.startswith(f"https://github.com/{ORG_NAME}/{TEMPLATE_REPO}"):
-            get_logger().debug(F"`{THIS_REPO}` appears to be based on `{TEMPLATE_REPO}`")
+            get_logger().info(F"`{THIS_REPO}` appears to be based on `{TEMPLATE_REPO}`")
 
             # does the repo already have a bot branch?
             branches = GitHubAdapter.get_branches(ORG_NAME, THIS_REPO, AUTH)
             print(branches, type(branches))
             if any(True for branch in branches if branch.get('ref').startswith(f'refs/heads/{BOT_NAME}')):
-                get_logger().debug(f"{THIS_REPO} already has a branch created by {BOT_NAME}")
+                get_logger().info(f"`{THIS_REPO}`` already has a branch created by `{BOT_NAME}`")
                 continue
 
             branch_name = f'{BOT_NAME}-' + random_string(length=16)
@@ -88,16 +89,16 @@ if __name__ == "__main__":
 
             for path in source_repo:
 
-                print(f"path: {path} ", end='')
+                message = f"path: {path} "
 
                 if path in IGNORE:
-                    print('ignoring')
+                    get_logger().debug(message + 'ignoring')
                     continue
 
                 if (template_path / path).is_file():
 
                     if not (branch_path / path).exists():
-                        print(f'is new')
+                        get_logger().debug(message + 'is new')
                         if not created_branch:
                             subprocess.run(F"git checkout -b {branch_name}", shell=True, cwd=branch_path)
                             created_branch = True
@@ -110,7 +111,7 @@ if __name__ == "__main__":
                         with open(branch_path / path, 'rb') as f:
                             target_file_contents = f.read()
                         if source_file_contents != target_file_contents:
-                            print('needs to be updated')
+                            get_logger().debug(message + 'needs to be updated')
                             if not created_branch:
                                 subprocess.run(F"git checkout -b {branch_name}")
                                 created_branch = True
@@ -118,10 +119,10 @@ if __name__ == "__main__":
                             shutil.copy2(template_path / path, branch_path / path)
                             subprocess.run(F'git add "{path}"', shell=False, cwd=branch_path)
                         else:
-                            print(f'needs no action')
+                            get_logger().debug(message + 'needs no action')
 
                 else:
-                    print("is not a file")
+                    get_logger().debug(message + "is not a file")
 
             if created_branch:
 
