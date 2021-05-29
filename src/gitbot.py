@@ -12,6 +12,7 @@ IGNORE = [
     'TEMPLATE',
     'LICENSE',
     'NOTICE',
+    'src\\internals\\errors\\__init__.py ',
     'src\\internals\\flows\\__init__.py ',
     'src\\internals\\flows\\empty_flow.py',
     'src\\internals\\models\\__init__.py']
