@@ -1,11 +1,24 @@
 steps:
+    # build the container image using doccker
   - name: gcr.io/cloud-builders/docker
     args:
-      ["build", "-t", "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}", "."]
+      [
+        "build",
+        "-t",
+        "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}",
+        "."
+      ]
 
-  - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "gcr.io/$PROJECT_ID/${_SERVICE_NAME}"]
+  # push built image to the container registry
+  - name: gcr.io/cloud-builders/docker
+    args:
+      [
+        "push",
+        "gcr.io/$PROJECT_ID/${_SERVICE_NAME}"
+      ]
 
+  # start the image in cloud run
+  # https://cloud.google.com/sdk/gcloud/reference/run/deploy
   - name: "gcr.io/cloud-builders/gcloud"
     args:
       [
@@ -20,5 +33,5 @@ steps:
         "managed",
         "--allow-unauthenticated",
         "--timeout",
-        "885"
+        "890"
       ]
