@@ -1,5 +1,5 @@
 """
-Base for new exception types
+Base for new exception types.
 """
 
 

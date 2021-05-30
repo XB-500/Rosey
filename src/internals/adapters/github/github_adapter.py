@@ -2,7 +2,7 @@ import base64
 import requests
 import ujson as json
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel  #type:ignore
 from typing import Optional
 
 
@@ -33,9 +33,9 @@ class GitHubAdapter():
 
         payload = {}
         payload["path"] = file_model.file_path
-        payload["branch"] = file_model.branch_name
+        payload["branch"] = file_model.branch_name  #type:ignore
         payload["message"] = "Synchronising with Template"
-        payload["content"] = base64.b64encode(file_model.contents).decode()
+        payload["content"] = base64.b64encode(file_model.contents).decode()  #type:ignore
 
         resp = requests.put(
                 url,
