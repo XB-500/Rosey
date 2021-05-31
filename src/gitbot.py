@@ -4,21 +4,21 @@ from tempfile import TemporaryDirectory
 from internals.adapters.github.github_adapter import GitHubFileModel, GitHubGroup
 
 
-IGNORE = [
-    f'.gitignore',
-    f'README.md',
-    f'requirements.txt',
-    f'tests{os.sep}requirements.txt',
-    f'src{os.sep}main.py',
-    f'src{os.sep}config.json',
-    f'TEMPLATE',
-    f'LICENSE',
-    f'NOTICE',
-    f'src{os.sep}internals{os.sep}errors{os.sep}__init__.py',
-    f'src{os.sep}internals{os.sep}flows{os.sep}__init__.py',
-    f'src{os.sep}internals{os.sep}flows{os.sep}empty_flow.py',
-    f'src{os.sep}internals{os.sep}models{os.sep}__init__.py']
-
+DEFAULT_BOTIGNORE = [
+    '.gitignore',
+    'README.md',
+    'requirements.txt',
+    'tests/requirements.txt',
+    'src/main.py',
+    'src/config.json',
+    'TEMPLATE',
+    'LICENSE',
+    'NOTICE',
+    'src/internals/errors/__init__.py',
+    'src/internals/flows/__init__.py',
+    'src/internals/flows/empty_flow.py',
+    'src/internals/models/__init__.py',
+    '.botignore']
 
 def get_all_files(path='.', pattern='**/*'):
     files=[]
@@ -99,6 +99,12 @@ if __name__ == "__main__":
             subprocess.run(F"git clone {authenticated_url}", shell=True, cwd=tempory_folder.name, stdout=subprocess.DEVNULL)
             os.chdir(branch_path)
 
+            IGNORE = DEFAULT_BOTIGNORE
+            ignore_file = branch_path / ".botignore"
+            if ignore_file.exists():
+                with ignore_file.open(mode='r') as f:
+                    IGNORE = f.read().splitlines()
+
             target_repo = get_all_files(branch_path)
             target_repo = [f[len(f'{branch_path}/'):] for f in target_repo]
 
@@ -106,7 +112,7 @@ if __name__ == "__main__":
 
                 message = f"path: {path} "
 
-                if path in IGNORE:
+                if path.replace('\\', '/') in IGNORE:
                     get_logger().debug(message + 'ignoring')
                     continue
 
@@ -149,6 +155,14 @@ if __name__ == "__main__":
                 subprocess.run('git commit -m "Syncing with Template"', shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
                 subprocess.run(f'git push {authenticated_url} {branch_name}', shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
 
+                GitHubAdapter.submit_pr(
+                    owner=ORG_NAME,
+                    repository_name=THIS_REPO,
+                    branch_name=branch_name,
+                    target_branch='main',
+                    authentication_token=AUTH,
+                    title=f"{BOT_NAME} auto PR submission"
+                )
 
     os.chdir('../..')
     tempory_folder.cleanup()
