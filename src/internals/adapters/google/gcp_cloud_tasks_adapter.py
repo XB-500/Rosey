@@ -12,6 +12,7 @@ Requirements
     pydantic
 """
 import os
+
 try:
     from google.cloud import tasks_v2  # type: ignore
     from google.protobuf import timestamp_pb2  # type: ignore
@@ -50,21 +51,24 @@ class CloudTasksTaskModel(CloudTasksQueueModel):
         in_seconds: integer (optional)
         task_name: string (optional)
     """
+
     target_url: str
     payload: Optional[Union[str, dict]]
     in_seconds: Optional[int] = None
     task_name: Optional[str] = None
 
+
 class CompletionModel(CloudTasksTaskModel):
     queue_name = "complete"
     target_url = "<host>/complete"
+
 
 class ContinuationModel(CloudTasksTaskModel):
     queue_name = "continue"
     target_url = "<host>/continue"
 
-class CloudTasksAdapter:
 
+class CloudTasksAdapter:
     @staticmethod
     def _stubbed_create_task(task: CloudTasksTaskModel):
         print(task.json())
@@ -132,7 +136,9 @@ class CloudTasksAdapter:
             cloud_task["name"] = f"{parent}/tasks/{task.task_name}"  # type:ignore
 
         # Use the client to build and send the task.
-        response = client.create_task(request={"parent": parent, "task": cloud_task})  # type:ignore
+        response = client.create_task(
+            request={"parent": parent, "task": cloud_task}
+        )  # type:ignore
         get_logger().debug(f"CloudTasks task created: {response.name}")
         return response
 
@@ -156,7 +162,9 @@ class CloudTasksAdapter:
             "name": client.queue_path(queue.project, queue.location, queue.queue_name)
         }
         # Use the client to create the queue.
-        response = client.create_queue(request={"parent": parent, "queue": task_queue})  # type:ignore
+        response = client.create_queue(
+            request={"parent": parent, "queue": task_queue}
+        )  # type:ignore
         return response
 
     @staticmethod
