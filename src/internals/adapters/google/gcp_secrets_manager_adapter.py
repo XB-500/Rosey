@@ -15,7 +15,7 @@ import os
 
 try:
     from google.cloud import secretmanager  # type:ignore
-except ImportError:
+except ImportError:  # pragma: no cover
     secretmanager = None  # type:ignore
 from typing import Optional
 from pydantic import BaseModel  # type:ignore

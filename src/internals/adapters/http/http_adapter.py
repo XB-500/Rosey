@@ -49,9 +49,9 @@ class HttpAdapter:
                 headers=request.headers if request.headers else None,
             )
             return response.status_code, response.headers, response.content
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             get_logger().error(f"GET request failed: {type(e).__name__} - {e}")
-        return 500, {}, bytes()
+        return 500, {}, bytes()  # pragma: no cover
 
     @staticmethod
     def post(request: PostRequestModel) -> tuple:
@@ -71,6 +71,6 @@ class HttpAdapter:
                 headers=request.headers if request.headers else None,
             )
             return response.status_code, response.headers, response.content
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             get_logger().error(f"POST request failed: {type(e).__name__} - {e}")
-        return 500, {}, bytes()
+        return 500, {}, bytes()  # pragma: no cover

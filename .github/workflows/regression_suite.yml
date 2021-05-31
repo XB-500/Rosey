@@ -24,7 +24,7 @@ jobs:
         run: coverage run -m pytest
 
       - name: Check Coverage
-        run: coverage report --include=src* --fail-under=80
+        run: coverage report --include=src* --fail-under=80 -m
 
   mypy:
     name: Type Checks

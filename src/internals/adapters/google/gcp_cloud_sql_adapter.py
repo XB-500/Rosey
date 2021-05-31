@@ -1,6 +1,11 @@
 import os
-import psycopg2  # type:ignore
 from mabel.logging import get_logger  # type:ignore
+
+from internals.errors.missing_dependency_error import MissingDependencyError  # type:ignore
+try:
+    import psycopg2  # type:ignore
+except ImportError:
+    psycopg2 = None
 
 
 class DatabaseConnection(object):
@@ -11,6 +16,10 @@ class DatabaseConnection(object):
         self.connector = None
 
     def __enter__(self):
+
+        if not psycopg2:
+            raise MissingDependencyError("`psycopg2-binary` is missing, please install or include in requirements.txt")
+
         self.connector = psycopg2.connect(
             host=os.environ.get("POSTGRES_HOST"),
             port=os.environ.get("POSTGRES_PORT"),

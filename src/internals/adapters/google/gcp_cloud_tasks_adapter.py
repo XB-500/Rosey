@@ -15,7 +15,7 @@ import os
 try:
     from google.cloud import tasks_v2  # type: ignore
     from google.protobuf import timestamp_pb2  # type: ignore
-except ImportError:
+except ImportError:  # pragma: no cover
     tasks_v2 = None  # type:ignore
 import datetime
 from mabel.logging import get_logger  # type: ignore
@@ -137,7 +137,7 @@ class CloudTasksAdapter:
         return response
 
     @staticmethod
-    def create_queue(queue: CloudTasksQueueModel):
+    def create_queue(queue: CloudTasksQueueModel):  # pragma: no cover
         """
         Create a task queue.
 
@@ -160,7 +160,7 @@ class CloudTasksAdapter:
         return response
 
     @staticmethod
-    def list_queues(location: CloudTasksQueueLocationModel):
+    def list_queues(location: CloudTasksQueueLocationModel):  # pragma: no cover
         """
         List all task queues.
 
@@ -178,7 +178,7 @@ class CloudTasksAdapter:
         yield from client.list_queues(request={"parent": parent})  # type:ignore
 
     @staticmethod
-    def list_queued_tasks(queue: CloudTasksQueueModel):
+    def list_queued_tasks(queue: CloudTasksQueueModel):  # pragma: no cover
         """
         Retreive the tasks from a queue.
 
