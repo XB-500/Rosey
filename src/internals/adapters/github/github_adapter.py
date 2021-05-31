@@ -58,24 +58,47 @@ class GitHubAdapter():
         return response.status_code, b''
 
     @staticmethod
-    def get_branches(owner: str, repo: str, authentication_token:str):
-        url = f"https://api.github.com/repos/{owner}/{repo}/git/refs/heads"
+    def get_branches(
+        owner: str,
+        repository_name: str,
+        authentication_token:str
+    ):
+        url = f"https://api.github.com/repos/{owner}/{repository_name}/git/refs/heads"
         response = requests.get(url, auth=('access_token', authentication_token))
         return response.json()
 
     @staticmethod
     def create_branch(   # nosec - no hardcoded password
         owner: str,
-        repo: str,
+        repository_name: str,
         branch_from: str = 'main',
         branch_name: str = 'branch',
-        auth_token: str = ''
+        authentication_token: str = ''
     ):
 
-        branches = GitHubAdapter.get_branches(owner, repo, auth_token)
+        branches = GitHubAdapter.get_branches(owner, repository_name, authentication_token)
         sha = [branch['object']['sha'] for branch in branches if branch['ref'] == f'refs/heads/{branch_from}'].pop()
-        url = f"https://api.github.com/repos/{owner}/{repo}/git/refs"
+        url = f"https://api.github.com/repos/{owner}/{repository_name}/git/refs"
         data = {"ref":f"refs/heads/{branch_name}", "sha":sha}
-        response = requests.post(url, data=json.dumps(data), auth=('access_token', auth_token))
+        response = requests.post(url, data=json.dumps(data), auth=('access_token', authentication_token))
         print(response.status_code, response.text)
         return True
+
+
+    @staticmethod
+    def submit_pr(
+        owner: str,
+        repository_name: str,
+        branch_name: str = '',
+        target_branch: str = 'main',
+        title: str = '',
+        authentication_token: str = ''
+    ):
+        url = f"https://api.github.com/repos/{owner}/{repository_name}/pulls"
+        data = {
+            "head": branch_name,
+            "base": target_branch,
+            "title": title
+        }
+        response = requests.post(url, data=json.dumps(data), auth=('access_token', authentication_token))
+        return response.status_code % 100 == 2
