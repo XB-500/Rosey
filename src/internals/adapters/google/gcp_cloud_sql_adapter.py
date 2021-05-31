@@ -1,7 +1,10 @@
 import os
 from mabel.logging import get_logger  # type:ignore
 
-from internals.errors.missing_dependency_error import MissingDependencyError  # type:ignore
+from internals.errors.missing_dependency_error import (
+    MissingDependencyError,
+)  # type:ignore
+
 try:
     import psycopg2  # type:ignore
 except ImportError:
@@ -18,7 +21,9 @@ class DatabaseConnection(object):
     def __enter__(self):
 
         if not psycopg2:
-            raise MissingDependencyError("`psycopg2-binary` is missing, please install or include in requirements.txt")
+            raise MissingDependencyError(
+                "`psycopg2-binary` is missing, please install or include in requirements.txt"
+            )
 
         self.connector = psycopg2.connect(
             host=os.environ.get("POSTGRES_HOST"),
@@ -38,7 +43,6 @@ class DatabaseConnection(object):
 
 
 class CloudSqlAdapter:
-
     @staticmethod
     def run(sql, vals=()):
         try:
@@ -56,7 +60,7 @@ class CloudSqlAdapter:
     @staticmethod
     def create(sql, vals=()):
         return CloudSqlAdapter.run(sql, vals)
-            
+
     @staticmethod
     def read(sql, vals=()):
         try:
@@ -80,7 +84,7 @@ class CloudSqlAdapter:
     @staticmethod
     def delete(sql, vals=()):
         return CloudSqlAdapter.create(sql, vals)
-    
+
     @staticmethod
     def run_no_transaction(sql):
         """

@@ -1,6 +1,9 @@
-from mabel.operators import EndOperator    # type: ignore
+from mabel.operators import EndOperator  # type: ignore
 
-VERSION_FILE_URL = "https://raw.githubusercontent.com/joocer/mabel/{branch}/mabel/version.py"
+VERSION_FILE_URL = (
+    "https://raw.githubusercontent.com/joocer/mabel/{branch}/mabel/version.py"
+)
+
 
 def version_checker_flow():
 
