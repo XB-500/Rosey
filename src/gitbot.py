@@ -1,26 +1,28 @@
-
+import os
+import pathlib
 from tempfile import TemporaryDirectory
 from internals.adapters.github.github_adapter import GitHubFileModel, GitHubGroup
-import pathlib
+
 
 IGNORE = [
-    'README.md',
-    'requirements.txt',
-    'tests\requirements.txt',
-    'src\\main.py',
-    'src\\config.json',
-    'TEMPLATE',
-    'LICENSE',
-    'NOTICE',
-    'src\\internals\\errors\\__init__.py ',
-    'src\\internals\\flows\\__init__.py ',
-    'src\\internals\\flows\\empty_flow.py',
-    'src\\internals\\models\\__init__.py']
+    f'.gitignore',
+    f'README.md',
+    f'requirements.txt',
+    f'tests{os.sep}requirements.txt',
+    f'src{os.sep}main.py',
+    f'src{os.sep}config.json',
+    f'TEMPLATE',
+    f'LICENSE',
+    f'NOTICE',
+    f'src{os.sep}internals{os.sep}errors{os.sep}__init__.py',
+    f'src{os.sep}internals{os.sep}flows{os.sep}__init__.py',
+    f'src{os.sep}internals{os.sep}flows{os.sep}empty_flow.py',
+    f'src{os.sep}internals{os.sep}models{os.sep}__init__.py']
 
 
-def get_all_files(path='.', pattern='**'):
+def get_all_files(path='.', pattern='**/*'):
     files=[]
-    file_refs = pathlib.Path(path).glob(pattern)
+    file_refs = pathlib.Path(path).rglob(pattern)
     for file in file_refs:
         files.append(str(file))
     return files
@@ -42,13 +44,17 @@ if __name__ == "__main__":
     TEMPLATE_REPO = "container-template"
     set_log_name(BOT_NAME)
     AUTH = os.environ.get('GITHUB_TOKEN')
-    get_logger().setLevel(15)
+    get_logger().setLevel(5)
 
     tempory_folder = TemporaryDirectory(prefix=BOT_NAME)
     template_path = pathlib.Path(tempory_folder.name) / TEMPLATE_REPO
 
     print(tempory_folder.name)
-    subprocess.run(f'git clone https://{AUTH}@github.com/{ORG_NAME}/{TEMPLATE_REPO}.git', shell=True, cwd=tempory_folder.name)
+    subprocess.run(f'git clone https://{AUTH}@github.com/{ORG_NAME}/{TEMPLATE_REPO}.git', shell=True, cwd=tempory_folder.name, stdout=subprocess.DEVNULL)
+
+    source_repo = get_all_files(template_path)
+    source_repo = [f[len(f'{template_path}/'):] for f in source_repo]
+    source_repo = [f for f in source_repo if not f.startswith('.git' + os.sep)]
 
     repos = GitHubListReposModel (
         authentication_token=AUTH,
@@ -82,7 +88,7 @@ if __name__ == "__main__":
             branches = GitHubAdapter.get_branches(ORG_NAME, THIS_REPO, AUTH)
 
             if any(True for branch in branches if branch.get('ref').startswith(f'refs/heads/{BOT_NAME}')):
-                get_logger().info(f"`{THIS_REPO}` already has a branch created by `{BOT_NAME}`")
+                get_logger().error(f"`{THIS_REPO}` already has a branch created by `{BOT_NAME}`")
                 continue
 
             branch_name = f'{BOT_NAME}-{datetime.datetime.now().strftime("%Y%m%d")}-{random_string(length=8)}'
@@ -90,11 +96,9 @@ if __name__ == "__main__":
 
             branch_path = pathlib.Path(tempory_folder.name) / THIS_REPO
             authenticated_url = repo.get('clone_url', '').replace('https://', f'https://{AUTH}@')
-            subprocess.run(F"git clone {authenticated_url}", shell=True, cwd=tempory_folder.name)
+            subprocess.run(F"git clone {authenticated_url}", shell=True, cwd=tempory_folder.name, stdout=subprocess.DEVNULL)
             os.chdir(branch_path)
 
-            source_repo = get_all_files(template_path)
-            source_repo = [f[len(f'{template_path}/'):] for f in source_repo]
             target_repo = get_all_files(branch_path)
             target_repo = [f[len(f'{branch_path}/'):] for f in target_repo]
 
@@ -111,11 +115,11 @@ if __name__ == "__main__":
                     if not (branch_path / path).exists():
                         get_logger().debug(message + 'is new')
                         if not created_branch:
-                            subprocess.run(F"git checkout -b {branch_name}", shell=True, cwd=branch_path)
+                            subprocess.run(F"git checkout -b {branch_name}", shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
                             created_branch = True
                         os.makedirs((branch_path / path).parent, exist_ok=True)
                         shutil.copy2(template_path / path, branch_path / path)
-                        subprocess.run(F'git add "{path}"', shell=True, cwd=branch_path)
+                        subprocess.run(F'git add "{path}"', shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
                     else:
                         with open(template_path / path, 'rb') as f:
                             source_file_contents = f.read()
@@ -124,11 +128,11 @@ if __name__ == "__main__":
                         if source_file_contents != target_file_contents:
                             get_logger().debug(message + 'needs to be updated')
                             if not created_branch:
-                                subprocess.run(F"git checkout -b {branch_name}", shell=True, cwd=branch_path)
+                                subprocess.run(F"git checkout -b {branch_name}", shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
                                 created_branch = True
                             os.makedirs((branch_path / path).parent, exist_ok=True)
                             shutil.copy2(template_path / path, branch_path / path)
-                            subprocess.run(F'git add "{path}"', shell=True, cwd=branch_path)
+                            subprocess.run(F'git add "{path}"', shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
                         else:
                             get_logger().debug(message + 'needs no action')
 
@@ -137,13 +141,13 @@ if __name__ == "__main__":
 
             if created_branch:
 
-                subprocess.run(F'git config --global user.email "justin.joyce+rosey@joocer.com"', shell=True, cwd=branch_path)
-                subprocess.run(F'git config --global user.name "Rosey"', shell=True, cwd=branch_path)
-                subprocess.run(F"git remote set-url origin {authenticated_url}", shell=True, cwd=branch_path)
-                subprocess.run(F"git remote set-url --push origin {authenticated_url}", shell=True, cwd=branch_path)
-                subprocess.run(F"git remote set-url --push origin {authenticated_url}", shell=True, cwd=branch_path)
-                subprocess.run('git commit -m "Syncing with Template"', shell=True, cwd=branch_path)
-                subprocess.run(f'git push {authenticated_url} {branch_name}', shell=True, cwd=branch_path)
+                subprocess.run(F'git config --global user.email "justin.joyce+rosey@joocer.com"', shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
+                subprocess.run(F'git config --global user.name {BOT_NAME}', shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
+                subprocess.run(F"git remote set-url origin {authenticated_url}", shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
+                subprocess.run(F"git remote set-url --push origin {authenticated_url}", shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
+                subprocess.run(F"git remote set-url --push origin {authenticated_url}", shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
+                subprocess.run('git commit -m "Syncing with Template"', shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
+                subprocess.run(f'git push {authenticated_url} {branch_name}', shell=True, cwd=branch_path, stdout=subprocess.DEVNULL)
 
 
     os.chdir('../..')
