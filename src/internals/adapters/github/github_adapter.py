@@ -64,7 +64,7 @@ class GitHubAdapter():
         return response.json()
 
     @staticmethod
-    def create_branch(
+    def create_branch(   # nosec - no hardcoded password
         owner: str,
         repo: str,
         branch_from: str = 'main',

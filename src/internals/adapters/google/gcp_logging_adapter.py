@@ -9,8 +9,13 @@ import datetime
 from mabel.logging.create_logger import LEVELS  # type:ignore
 from pydantic import BaseModel  # type:ignore
 from typing import Union, Optional
-from google.cloud import logging as stackdriver  # type:ignore
-from google.cloud.logging import DESCENDING, TextEntry, StructEntry  # type:ignore
+
+from internals.errors.missing_dependency_error import MissingDependencyError
+try:  # pragma: no cover
+    from google.cloud import logging as stackdriver  # type:ignore
+    from google.cloud.logging import DESCENDING, TextEntry, StructEntry  # type:ignore
+except ImportError:
+    stackdriver = None  # type:ignore
 
 LOG_NAME = "MABEL"
 
@@ -38,6 +43,10 @@ class StackDriverAdapter():
 
     @staticmethod
     def write_event(event: EventModel):
+
+        if not stackdriver:
+            MissingDependencyError("`google-cloud-logging` is missing, please install or include in requirements.txt")
+
         client = stackdriver.Client()
         logger = client.logger(LOG_NAME)
         
@@ -58,7 +67,10 @@ class StackDriverAdapter():
 
     @staticmethod
     def search_events(filters = EventFilterModel):
-        i = 0
+
+        if not stackdriver:
+            MissingDependencyError("`google-cloud-logging` is missing, please install or include in requirements.txt")
+
         client = stackdriver.Client()
         logger = client.logger(LOG_NAME)
         
