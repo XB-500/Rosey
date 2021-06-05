@@ -1,9 +1,6 @@
 import os
 from mabel.logging import get_logger  # type:ignore
-
-from internals.errors.missing_dependency_error import (
-    MissingDependencyError,
-)  # type:ignore
+from ...errors import MissingDependencyError
 
 try:
     import psycopg2  # type:ignore
@@ -11,7 +8,7 @@ except ImportError:
     psycopg2 = None
 
 
-class DatabaseConnection(object):
+class DatabaseConnection(object):  # pragma: no cover
     def __init__(self):
         """
         Wraps connection handling in a context manager
@@ -19,16 +16,13 @@ class DatabaseConnection(object):
         self.connector = None
 
     def __enter__(self):
-
         if not psycopg2:
             raise MissingDependencyError(
-                "`psycopg2-binary` is missing, please install or include in requirements.txt"
+                "Library `psycopg2` is missing, install or include in requirements.txt"
             )
-
         self.connector = psycopg2.connect(
             host=os.environ.get("POSTGRES_HOST"),
             port=os.environ.get("POSTGRES_PORT"),
-            database=os.environ.get("POSTGRES_DB"),
             user=os.environ.get("POSTGRES_USER"),
             password=os.environ.get("POSTGRES_PASSWORD"),
         )
@@ -42,7 +36,7 @@ class DatabaseConnection(object):
         self.connector.close()
 
 
-class CloudSqlAdapter:
+class CloudSqlAdapter:  # pragma: no cover
     @staticmethod
     def run(sql, vals=()):
         try:

@@ -32,4 +32,5 @@ class SlackAdapter:
                 if notification_model.blocks
                 else None,
             },
+            timeout=60,
         ).json()

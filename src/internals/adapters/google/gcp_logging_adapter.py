@@ -1,9 +1,13 @@
-# read logs between two dates, with a filter
+"""
+Google Cloud Platform: StackDriver Adapter
 
+An interface to StackDriver on GCP to assist with performing common functionality with
+this component.
 
-# google-cloud-logging
-# pydantic
-
+Requirements
+    google-cloud-logging
+    pydantic
+"""
 import datetime
 from mabel.logging.create_logger import LEVELS  # type:ignore
 from pydantic import BaseModel  # type:ignore
@@ -17,7 +21,7 @@ try:  # pragma: no cover
 except ImportError:
     stackdriver = None  # type:ignore
 
-LOG_NAME = "MABEL"
+LOG_NAME = "WASURE"
 
 LEVELS_TO_STRING = {
     LEVELS.DEBUG: "DEBUG",
@@ -44,10 +48,10 @@ class EventFilterModel(BaseModel):
 
 class StackDriverAdapter:
     @staticmethod
-    def write_event(event: EventModel):
+    def write_event(event: EventModel):  # pragma: no cover
 
-        if not stackdriver:
-            MissingDependencyError(
+        if not stackdriver:  # pragma: no-cover
+            raise MissingDependencyError(
                 "`google-cloud-logging` is missing, please install or include in requirements.txt"
             )
 
@@ -72,10 +76,10 @@ class StackDriverAdapter:
             )
 
     @staticmethod
-    def search_events(filters=EventFilterModel):
+    def search_events(filters=EventFilterModel):  # pragma: no cover
 
         if not stackdriver:
-            MissingDependencyError(
+            raise MissingDependencyError(
                 "`google-cloud-logging` is missing, please install or include in requirements.txt"
             )
 
