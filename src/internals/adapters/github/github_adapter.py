@@ -37,8 +37,8 @@ class GitHubAdapter:
         payload["branch"] = file_model.branch_name  # type:ignore
         payload["message"] = "Synchronising with Template"
         payload["content"] = base64.b64encode(
-            file_model.contents
-        ).decode()  # type:ignore
+            file_model.contents  # type:ignore
+        ).decode()
 
         resp = requests.put(
             url,
@@ -47,6 +47,7 @@ class GitHubAdapter:
                 "Content-Type": "application/json",
                 "Authorization": "token " + file_model.authentication_token,
             },
+            timeout=60,
         )
         return resp
 
@@ -54,7 +55,7 @@ class GitHubAdapter:
     def list_repos(repos: GitHubListReposModel):
         apiurl = f"https://api.github.com/{repos.classification}/{repos.name}/repos"
         response = requests.get(
-            apiurl, auth=("access_token", repos.authentication_token)
+            apiurl, auth=("access_token", repos.authentication_token), timeout=60
         )
         return response
 
@@ -62,7 +63,7 @@ class GitHubAdapter:
     def get_file(file_model: GitHubFileModel):
         url = f"https://api.github.com/repos/{file_model.owner}/{file_model.repository_name}/contents/{file_model.file_path}"
         response = requests.get(
-            url, auth=("access_token", file_model.authentication_token)
+            url, auth=("access_token", file_model.authentication_token), timeout=60
         )
         if response.status_code == 200:
             return response.status_code, base64.b64decode(
@@ -73,7 +74,9 @@ class GitHubAdapter:
     @staticmethod
     def get_branches(owner: str, repository_name: str, authentication_token: str):
         url = f"https://api.github.com/repos/{owner}/{repository_name}/git/refs/heads"
-        response = requests.get(url, auth=("access_token", authentication_token))
+        response = requests.get(
+            url, auth=("access_token", authentication_token), timeout=60
+        )
         return response.json()
 
     @staticmethod
@@ -96,13 +99,16 @@ class GitHubAdapter:
         url = f"https://api.github.com/repos/{owner}/{repository_name}/git/refs"
         data = {"ref": f"refs/heads/{branch_name}", "sha": sha}
         response = requests.post(
-            url, data=json.dumps(data), auth=("access_token", authentication_token)
+            url,
+            data=json.dumps(data),
+            auth=("access_token", authentication_token),
+            timeout=60,
         )
         print(response.status_code, response.text)
         return True
 
     @staticmethod
-    def submit_pr(
+    def submit_pr(  # nosec
         owner: str,
         repository_name: str,
         branch_name: str = "",
@@ -113,6 +119,9 @@ class GitHubAdapter:
         url = f"https://api.github.com/repos/{owner}/{repository_name}/pulls"
         data = {"head": branch_name, "base": target_branch, "title": title}
         response = requests.post(
-            url, data=json.dumps(data), auth=("access_token", authentication_token)
+            url,
+            data=json.dumps(data),
+            auth=("access_token", authentication_token),
+            timeout=60,
         )
         return response.status_code % 100 == 2

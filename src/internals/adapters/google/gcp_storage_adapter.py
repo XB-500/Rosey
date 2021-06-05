@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover
 
 class CloudStorageAdapter:
     @staticmethod
-    def get_blob(project: str, bucket: str, blob_name: str):
+    def get_blob(project: str, bucket: str, blob_name: str):  # pragma: no cover
 
         if not storage:  # pragma: no cover
             raise MissingDependencyError(
@@ -37,7 +37,7 @@ class CloudStorageAdapter:
         return None
 
     @staticmethod
-    def list_blobs(project: str, bucket: str, **kwargs):
+    def list_blobs(project: str, bucket: str, **kwargs):  # pragma: no cover
 
         if not storage:  # pragma: no cover
             raise MissingDependencyError(
@@ -59,7 +59,7 @@ class CloudStorageAdapter:
         yield from [blob.name for blob in blobs if not blob.name.endswith("/")]
 
     @staticmethod
-    def save_blob(project: str, bucket: str, path: str, file: str):
+    def save_blob(project: str, bucket: str, path: str, file: str):  # pragma: no cover
 
         if not storage:  # pragma: no cover
             raise MissingDependencyError(
@@ -86,7 +86,9 @@ class CloudStorageAdapter:
         return True
 
     @staticmethod
-    def sync_folder(project: str, bucket: str, target: str, source: str):
+    def sync_folder(
+        project: str, bucket: str, target: str, source: str
+    ):  # pragma: no cover
         import glob
 
         source_paths = glob.iglob(source + "/**", recursive=True)
@@ -97,3 +99,31 @@ class CloudStorageAdapter:
                 CloudStorageAdapter().save_blob(
                     project=project, bucket=bucket, path=target_path, file=source_path
                 )
+
+    @staticmethod
+    def remove_blobs(project: str, bucket: str, prefix: str = ""):  # pragma: no cover
+        blobs = CloudStorageAdapter.list_blobs(
+            project=project, bucket=bucket, prefix=prefix
+        )
+
+        if not storage:  # pragma: no cover
+            raise MissingDependencyError(
+                "'google-cloud-storage' is missing, install or include in requirements.txt"
+            )
+
+        # this means we're testing
+        if os.environ.get("STORAGE_EMULATOR_HOST") is not None:  # pragma: no cover
+            client = storage.Client(
+                credentials=AnonymousCredentials(),
+                project=project,
+            )
+        else:  # pragma: no cover
+            client = storage.Client(project=project)
+
+        gcs_bucket = client.get_bucket(bucket)
+        blobs = CloudStorageAdapter.list_blobs(
+            project=project, bucket=bucket, prefix=prefix
+        )
+
+        for blob in blobs:
+            gcs_bucket.delete_blob(blob)

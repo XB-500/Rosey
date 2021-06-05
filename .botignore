@@ -1,0 +1,14 @@
+.gitignore
+.botignore
+README.md
+requirements.tx
+TEMPLATE
+LICENSE
+NOTICE
+src\main.py
+src\config.json
+src\internals\errors\__init__.py
+src\internals\flows\__init__.py
+src\internals\flows\empty_flow.py
+src\internals\models\__init__.py
+tests\requirements.txt

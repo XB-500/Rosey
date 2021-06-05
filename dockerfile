@@ -5,8 +5,8 @@ WORKDIR /app
 ADD . /app/
 RUN pip install -r requirements.txt
 
-RUN useradd --create-home norris
-USER norris
+RUN useradd --create-home chucknorris
+USER chucknorris
 
 ENV PYTHONUNBUFFERED=1
 ENV LOG_SINK=WASURE

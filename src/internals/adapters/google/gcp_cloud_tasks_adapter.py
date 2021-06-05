@@ -13,12 +13,13 @@ Requirements
 """
 import os
 
-try:
+try:  # pragma: no cover
     from google.cloud import tasks_v2  # type: ignore
     from google.protobuf import timestamp_pb2  # type: ignore
 except ImportError:  # pragma: no cover
-    tasks_v2 = None  # type:ignore
+    tasks_v2 = None
 import datetime
+from ... import config
 from mabel.logging import get_logger  # type: ignore
 from mabel.data.formats.json import serialize  # type: ignore
 from pydantic import BaseModel  # type:ignore
@@ -30,7 +31,7 @@ from ...errors import MissingDependencyError
 # https://pydantic-docs.helpmanual.io/usage/models/
 # The models inherit from each other in turn, adding more fields as they go.
 class CloudTasksQueueLocationModel(BaseModel):
-    project: str = "mabeldev"
+    project: Optional[str] = config.project_name()
     location: str = "europe-west2"
 
 
@@ -59,13 +60,13 @@ class CloudTasksTaskModel(CloudTasksQueueModel):
 
 
 class CompletionModel(CloudTasksTaskModel):
-    queue_name = "complete"
-    target_url = "<host>/complete"
+    queue_name = "completion"
+    target_url = f"{config.controller_url()}/complete"
 
 
 class ContinuationModel(CloudTasksTaskModel):
     queue_name = "continue"
-    target_url = "<host>/continue"
+    target_url = f"{config.controller_url()}/continue"
 
 
 class CloudTasksAdapter:
@@ -75,7 +76,7 @@ class CloudTasksAdapter:
         return None
 
     @staticmethod
-    def create_task(task: CloudTasksTaskModel):
+    def create_task(task: CloudTasksTaskModel):  # pragma: no cover
         """
         Create a task for a given queue with an arbitrary payload.
 
@@ -95,7 +96,7 @@ class CloudTasksAdapter:
         if os.environ.get("STUB_CLOUD_TASKS", False):
             return CloudTasksAdapter._stubbed_create_task(task)
 
-        if not tasks_v2:
+        if not tasks_v2:  # pragma: no cover
             raise MissingDependencyError("`google.cloud.tasks_v2` must be installed")
 
         client = tasks_v2.CloudTasksClient()
@@ -111,6 +112,7 @@ class CloudTasksAdapter:
             }
         }
         if task.payload is not None:
+            payload = ""
             if isinstance(task.payload, dict):
                 payload = serialize(task.payload)
                 cloud_task["http_request"]["headers"] = {
@@ -136,9 +138,7 @@ class CloudTasksAdapter:
             cloud_task["name"] = f"{parent}/tasks/{task.task_name}"  # type:ignore
 
         # Use the client to build and send the task.
-        response = client.create_task(
-            request={"parent": parent, "task": cloud_task}
-        )  # type:ignore
+        response = client.create_task(request={"parent": parent, "task": cloud_task})
         get_logger().debug(f"CloudTasks task created: {response.name}")
         return response
 
@@ -162,9 +162,7 @@ class CloudTasksAdapter:
             "name": client.queue_path(queue.project, queue.location, queue.queue_name)
         }
         # Use the client to create the queue.
-        response = client.create_queue(
-            request={"parent": parent, "queue": task_queue}
-        )  # type:ignore
+        response = client.create_queue(request={"parent": parent, "queue": task_queue})
         return response
 
     @staticmethod
@@ -183,7 +181,7 @@ class CloudTasksAdapter:
         # Construct the fully qualified location path.
         parent = f"projects/{location.project}/locations/{location.location}"
         # Use the client to obtain the queues.
-        yield from client.list_queues(request={"parent": parent})  # type:ignore
+        yield from client.list_queues(request={"parent": parent})
 
     @staticmethod
     def list_queued_tasks(queue: CloudTasksQueueModel):  # pragma: no cover
@@ -204,4 +202,4 @@ class CloudTasksAdapter:
         parent = client.queue_path(queue.project, queue.location, queue.queue_name)
 
         # Iterate over all results
-        yield from client.list_tasks(request={"parent": parent})  # type:ignore
+        yield from client.list_tasks(request={"parent": parent})
