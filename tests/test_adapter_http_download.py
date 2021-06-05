@@ -12,7 +12,6 @@ from mabel.utils.entropy import random_string  # type:ignore
 import pytest
 
 
-
 def test_get():
 
     test_payload = random_string()
