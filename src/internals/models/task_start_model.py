@@ -15,6 +15,7 @@ class TaskStartModel(BaseModel):
     The config item contains information relating to this specific execution of the
     task, for example date ranges, filters and page ids.
     """
-    run_id: str = ''
-    work_id: str = ''
+
+    run_id: str = ""
+    work_id: str = ""
     config: dict = {}

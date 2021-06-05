@@ -12,5 +12,5 @@ from .gcp_cloud_tasks_adapter import (
     CloudTasksQueueModel,
     CloudTasksTaskModel,
     CompletionModel,
-    ContinuationModel
+    ContinuationModel,
 )
