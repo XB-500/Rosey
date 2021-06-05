@@ -47,6 +47,7 @@ class HttpAdapter:
                 params=request.parameters if request.parameters else None,
                 auth=(request.username, request.password) if request.username else None,
                 headers=request.headers if request.headers else None,
+                timeout=60,
             )
             return response.status_code, response.headers, response.content
         except Exception as e:  # pragma: no cover
@@ -69,6 +70,7 @@ class HttpAdapter:
                 data=request.data if request.data else None,
                 auth=(request.username, request.password) if request.username else None,
                 headers=request.headers if request.headers else None,
+                timeout=60,
             )
             return response.status_code, response.headers, response.content
         except Exception as e:  # pragma: no cover

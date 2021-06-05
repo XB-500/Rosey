@@ -15,15 +15,16 @@ import os
 
 try:
     from google.cloud import secretmanager  # type:ignore
-except ImportError:  # pragma: no cover
+except ImportError:
     secretmanager = None  # type:ignore
 from typing import Optional
 from pydantic import BaseModel  # type:ignore
+from ... import config
 from ...errors import MissingDependencyError
 
 
 class SecretsManagerSecretModel(BaseModel):
-    project: str = "762690895289"
+    project: Optional[str] = config.project_name()
     secret_id: str
     version_id: str = "latest"
 
