@@ -1,9 +1,5 @@
 {
-    "table_name": "GITHUB_HOOKS",
-    "description": "Payloads from GitHub webhooks",
-    "classification": "PRIVATE",
-    "config": {
-        "target_project": "mabel",
-        "target_dataset": "mabel_data/RAW/GITHUB/GITHUB_HOOKS"
-    }
+    "job_name": "ROSEY",
+    "GITHUB_ORG": "load from environment",
+    "GITHUB_TOKEN_KEY": "GITHUB_TOKEN"
 }
