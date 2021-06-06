@@ -17,8 +17,16 @@ jobs:
       - name: Install Requirements
         run: |
           python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
+          pip install --upgrade pytest coverage
           pip install -r $GITHUB_WORKSPACE/requirements.txt
           pip install -r $GITHUB_WORKSPACE/tests/requirements.txt
+
+      - name: Start GCS Emulator
+        run: |
+          docker run -d --name fake-gcs-server \
+                     -p 9090:4443 \
+                     fsouza/fake-gcs-server -scheme http
 
       - name: Run Regression Tests
         run: coverage run -m pytest

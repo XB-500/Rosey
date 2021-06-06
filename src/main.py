@@ -7,8 +7,12 @@ from fastapi.responses import UJSONResponse  # type:ignore
 
 def load_job_specific_contect(context):
     my_context = context.copy()
-    github_token_secret = SecretsManagerSecretModel(secret_id=my_context["GITHUB_TOKEN_KEY"])
-    my_context['GITHUB_TOKEN'] = SecretsManagerAdapter.retrieve_secret(github_token_secret)
+    github_token_secret = SecretsManagerSecretModel(
+        secret_id=my_context["GITHUB_TOKEN_KEY"]
+    )
+    my_context["GITHUB_TOKEN"] = SecretsManagerAdapter.retrieve_secret(
+        github_token_secret
+    )
 
     return my_context
 
