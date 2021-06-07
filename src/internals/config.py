@@ -14,7 +14,7 @@ PRODUCTION_VALUES = {
     "<bucket:raw>": "mabel_data/RAW",
     "<bucket:logs>": "mabel_logs",
     "<bucket:processed>": "mabel_data/PROCESSED",
-    "<bucket:flows>": "mabel_flows/FLOWS",
+    "<bucket:flows>": "mabel_flows",
 }
 
 DEVELOPMENT_VALUES = {
