@@ -1,4 +1,4 @@
-from re import A
+import glob
 from mabel.operators import EndOperator
 from ..operators import (
     GetReposOperator,
@@ -16,16 +16,16 @@ def print_item(data):
     return data
 
 
-def sync_repos_flow(context):
+file_location = glob.glob("**/comments.txt", recursive=True).pop()
+with open(file_location, "r") as c:
+    COMMENTS = c.read()
+COMMENTS = COMMENTS.replace(
+    "{TEMPLATE_REPO}",
+    f"https://github.com/{context['GITHUB_ORG']}/{context['TEMPLATE_REPO']}",
+)
 
-    COMMENTS = (
-        open("comments.txt")
-        .read()
-        .replace(
-            "{TEMPLATE_REPO}",
-            f"https://github.com/{context['GITHUB_ORG']}/{context['TEMPLATE_REPO']}",
-        )
-    )
+
+def sync_repos_flow(context):
 
     get_all_repos = GetReposOperator(
         auth_token=context["GITHUB_TOKEN"], organization=context["GITHUB_ORG"]
