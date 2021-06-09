@@ -22,4 +22,6 @@ class GetReposOperator(BaseOperator):
         self.logger.debug(f"I found {len(repo_list)} repositories.")
 
         for repo in repo_list:
+            print(type(repo))
+            print(repo)
             yield repo, context
