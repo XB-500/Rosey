@@ -27,4 +27,4 @@ jobs:
 
       - name: Run Scanner
         run: |
-          docker run --rm -i -v $GITHUB_WORKSPACE/src --link sonarqube newtmitch/sonar-scanner sonar-scanner -Dsonar.host.url=http://127.0.0.1:9092
+          docker run --rm -i -v $GITHUB_WORKSPACE/src --link sonarqube newtmitch/sonar-scanner sonar-scanner -Dsonar.host.url=http://127.0.0.1:9000

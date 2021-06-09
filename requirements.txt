@@ -6,3 +6,4 @@ orjson
 requests
 google-cloud-storage
 google-cloud-tasks==2.2.0
+google-cloud-secret-manager

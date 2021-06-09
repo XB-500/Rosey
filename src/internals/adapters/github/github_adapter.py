@@ -1,4 +1,5 @@
 import base64
+import re
 import requests
 import ujson as json
 from enum import Enum
@@ -55,7 +56,7 @@ class GitHubAdapter:
     def list_repos(repos: GitHubListReposModel):
         apiurl = f"https://api.github.com/{repos.classification}/{repos.name}/repos"
         response = requests.get(
-            apiurl, auth=("access_token", repos.authentication_token), timeout=60
+            apiurl, auth=("access_token", repos.authentication_token), headers={'Accept':'application/vnd.github.v3+json'}, timeout=60
         )
         return response
 
