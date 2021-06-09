@@ -53,9 +53,8 @@ class SyncWithRepoOperator(BaseOperator):
         THIS_REPO = data["name"]
         BOT_NAME = context['job_name']
 
-
-        tempory_folder = TemporaryDirectory(prefix=BOT_NAME)
-        template_path = pathlib.Path(tempory_folder.name) / self.source_repo
+        temporary_folder = TemporaryDirectory(prefix=BOT_NAME)
+        template_path = pathlib.Path(temporary_folder.name) / self.source_repo
 
 
 
@@ -89,14 +88,14 @@ class SyncWithRepoOperator(BaseOperator):
 
 
         # check out the target repo
-        branch_path = pathlib.Path(tempory_folder.name) / THIS_REPO
+        branch_path = pathlib.Path(temporary_folder.name) / THIS_REPO
         authenticated_url = data.get("clone_url", "").replace(
             "https://", f"https://{self.AUTH_TOKEN}@"
         )
         subprocess.run(
             f"git clone {authenticated_url}",
             shell=True,
-            cwd=tempory_folder.name,
+            cwd=temporary_folder.name,
             stdout=subprocess.DEVNULL,
         )
         os.chdir(branch_path)
@@ -201,7 +200,7 @@ class SyncWithRepoOperator(BaseOperator):
                 stdout=subprocess.DEVNULL,
             )
             subprocess.run(
-                f"git remote set-url --push origin {authenticated_url}",
+                f"git remote set-url --pull origin {authenticated_url}",
                 shell=True,
                 cwd=branch_path,
                 stdout=subprocess.DEVNULL,
@@ -230,7 +229,7 @@ class SyncWithRepoOperator(BaseOperator):
             )
 
         os.chdir("../..")
-        tempory_folder.cleanup()
+        temporary_folder.cleanup()
 
 
         return data, context
