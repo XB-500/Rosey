@@ -16,16 +16,16 @@ def print_item(data):
     return data
 
 
-file_location = glob.glob("**/comments.txt", recursive=True).pop()
-with open(file_location, "r") as c:
-    COMMENTS = c.read()
-COMMENTS = COMMENTS.replace(
-    "{TEMPLATE_REPO}",
-    f"https://github.com/{context['GITHUB_ORG']}/{context['TEMPLATE_REPO']}",
-)
-
 
 def sync_repos_flow(context):
+
+    file_location = glob.glob("**/comments.txt", recursive=True).pop()
+    with open(file_location, "r") as c:
+        COMMENTS = c.read()
+    COMMENTS = COMMENTS.replace(
+        "{TEMPLATE_REPO}",
+        f"https://github.com/{context['GITHUB_ORG']}/{context['TEMPLATE_REPO']}",
+    )
 
     get_all_repos = GetReposOperator(
         auth_token=context["GITHUB_TOKEN"], organization=context["GITHUB_ORG"]
