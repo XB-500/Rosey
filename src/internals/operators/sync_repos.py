@@ -67,7 +67,7 @@ class SyncWithRepoOperator(BaseOperator):
             for branch in branches
             if branch.get("ref").startswith(f"refs/heads/{BOT_NAME}")
         ):
-            self.logger().error(
+            self.logger.error(
                 f"`{THIS_REPO}` already has a branch created by `{BOT_NAME}`"
             )
             return None
