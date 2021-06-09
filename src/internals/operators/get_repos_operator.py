@@ -1,4 +1,5 @@
 from mabel import BaseOperator  # type:ignore
+from mabel.data.formats import json  # type:ignore
 from ..adapters.github import GitHubAdapter, GitHubListReposModel, GitHubGroup
 
 
@@ -19,9 +20,10 @@ class GetReposOperator(BaseOperator):
         )
 
         repo_list = GitHubAdapter.list_repos(repos).json()
+        repo_list = json.parse(repo_list)
         self.logger.debug(f"I found {len(repo_list)} repositories.")
 
         for repo in repo_list:
-            print(type(repo))
+            print(type(repo), )
             print(repo)
             yield repo, context
