@@ -56,7 +56,10 @@ class GitHubAdapter:
     def list_repos(repos: GitHubListReposModel):
         apiurl = f"https://api.github.com/{repos.classification}/{repos.name}/repos"
         response = requests.get(
-            apiurl, auth=("access_token", repos.authentication_token), headers={'Accept':'application/vnd.github.v3+json'}, timeout=60
+            apiurl,
+            auth=("access_token", repos.authentication_token),
+            headers={"Accept": "application/vnd.github.v3+json"},
+            timeout=60,
         )
         return response
 
@@ -116,9 +119,15 @@ class GitHubAdapter:
         target_branch: str = "main",
         title: str = "",
         authentication_token: str = "",
+        comments: str = "",
     ):
         url = f"https://api.github.com/repos/{owner}/{repository_name}/pulls"
-        data = {"head": branch_name, "base": target_branch, "title": title}
+        data = {
+            "head": branch_name,
+            "base": target_branch,
+            "title": title,
+            "body": comments,
+        }
         response = requests.post(
             url,
             data=json.dumps(data),

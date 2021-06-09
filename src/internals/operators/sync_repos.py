@@ -31,6 +31,7 @@ DEFAULT_BOTIGNORE = [
     "tests/requirements.txt",
 ]
 
+
 def get_all_files(path=".", pattern="**/*"):
     files = []
     file_refs = pathlib.Path(path).rglob(pattern)
@@ -51,12 +52,10 @@ class SyncWithRepoOperator(BaseOperator):
 
     def execute(self, data, context):
         THIS_REPO = data["name"]
-        BOT_NAME = context['job_name']
+        BOT_NAME = context["job_name"]
 
         temporary_folder = TemporaryDirectory(prefix=BOT_NAME)
         template_path = pathlib.Path(temporary_folder.name) / self.source_repo
-
-
 
         # does the repo already have a bot branch?
         branches = GitHubAdapter.get_branches(
@@ -73,7 +72,6 @@ class SyncWithRepoOperator(BaseOperator):
             )
             return None
 
-
         # clone the template repo
         subprocess.run(
             f"git clone https://{self.AUTH_TOKEN}@github.com/{self.ORGANIZATION}/{self.source_repo}.git",
@@ -84,8 +82,6 @@ class SyncWithRepoOperator(BaseOperator):
         source_repo = get_all_files(template_path)
         source_repo = [f[len(f"{template_path}/") :] for f in source_repo]
         source_repo = [f for f in source_repo if not f.startswith(".git" + os.sep)]
-
-
 
         # check out the target repo
         branch_path = pathlib.Path(temporary_folder.name) / THIS_REPO
@@ -102,11 +98,9 @@ class SyncWithRepoOperator(BaseOperator):
         target_repo = get_all_files(branch_path)
         target_repo = [f[len(f"{branch_path}/") :] for f in target_repo]
 
-
         # Name the new branch
         branch_name = f'{BOT_NAME}-{datetime.datetime.now().strftime("%Y%m%d")}-{random_string(length=8)}'
         created_branch = False
-
 
         # get the list of files to ignore
         IGNORE = DEFAULT_BOTIGNORE
@@ -114,9 +108,6 @@ class SyncWithRepoOperator(BaseOperator):
         if ignore_file.exists():
             with ignore_file.open(mode="r") as f:
                 IGNORE = DEFAULT_BOTIGNORE + f.read().splitlines()
-
-
-
 
         for path in source_repo:
 
@@ -171,7 +162,6 @@ class SyncWithRepoOperator(BaseOperator):
                         )
                     else:
                         self.logger.debug(message + "needs no action")
-
 
         if created_branch:
 
@@ -230,6 +220,5 @@ class SyncWithRepoOperator(BaseOperator):
 
         os.chdir("../..")
         temporary_folder.cleanup()
-
 
         return data, context

@@ -1,6 +1,10 @@
 from re import A
 from mabel.operators import EndOperator
-from ..operators import GetReposOperator, FilterOnFileOperator, SyncWithRepoOperator  # type:ignore
+from ..operators import (
+    GetReposOperator,
+    FilterOnFileOperator,
+    SyncWithRepoOperator,
+)  # type:ignore
 
 
 from mabel import operator
@@ -17,9 +21,11 @@ def sync_repos_flow(context):
     COMMENTS = (
         open("comments.txt")
         .read()
-        .replace("{TEMPLATE_REPO}", f"https://github.com/{context['GITHUB_ORG']}/{context['TEMPLATE_REPO']}")
+        .replace(
+            "{TEMPLATE_REPO}",
+            f"https://github.com/{context['GITHUB_ORG']}/{context['TEMPLATE_REPO']}",
+        )
     )
-
 
     get_all_repos = GetReposOperator(
         auth_token=context["GITHUB_TOKEN"], organization=context["GITHUB_ORG"]
@@ -28,13 +34,14 @@ def sync_repos_flow(context):
         auth_token=context["GITHUB_TOKEN"],
         organization=context["GITHUB_ORG"],
         file_path="TEMPLATE",
-        file_contents=f"https://github.com/{context['GITHUB_ORG']}/{context['TEMPLATE_REPO']}"
+        file_contents=f"https://github.com/{context['GITHUB_ORG']}/{context['TEMPLATE_REPO']}",
     )
     sync = SyncWithRepoOperator(
         auth_token=context["GITHUB_TOKEN"],
         organization=context["GITHUB_ORG"],
-        source_repo=context['TEMPLATE_REPO'], 
-        comments=COMMENTS)
+        source_repo=context["TEMPLATE_REPO"],
+        comments=COMMENTS,
+    )
 
     end = EndOperator()
 
