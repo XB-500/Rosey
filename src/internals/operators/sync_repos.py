@@ -78,7 +78,7 @@ class SyncWithRepoOperator(BaseOperator):
         subprocess.run(
             f"git clone https://{self.AUTH_TOKEN}@github.com/{self.ORGANIZATION}/{self.source_repo}.git",
             shell=True,
-            cwd=tempory_folder.name,
+            cwd=temporary_folder.name,
             stdout=subprocess.DEVNULL,
         )
         source_repo = get_all_files(template_path)
