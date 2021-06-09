@@ -19,7 +19,8 @@ class GetReposOperator(BaseOperator):
             classification=GitHubGroup.orgs,
         )
 
-        repo_list = GitHubAdapter.list_repos(repos).json()
+        repo_list = GitHubAdapter.list_repos(repos).content
+        print(repo_list)
         repo_list = json.parse(repo_list)
         self.logger.debug(f"I found {len(repo_list)} repositories.")
 
