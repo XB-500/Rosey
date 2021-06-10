@@ -1,10 +1,12 @@
 import os
+import time
 import traceback
 import uvicorn  # type:ignore
 from . import config
 from internals.models import CompletionSignal
 from internals.adapters.google import CloudTasksAdapter, CompletionModel
 from fastapi import FastAPI, HTTPException  # type:ignore
+from typing import Union
 from mabel import Flow  # type:ignore
 from mabel.logging import get_logger, set_log_name  # type:ignore
 from mabel.utils.common import build_context  # type:ignore
@@ -23,19 +25,21 @@ logger = get_logger()
 application = FastAPI()
 
 
-def _update_environent_references(context: dict) -> dict:
-    new_context = context.copy()
-    for k, v in new_context.items():
-        if isinstance(v, dict):
-            new_context[k] = _update_environent_references(v)
-        if isinstance(v, str):
-            new_context[k] = config.set_environment_value(v)
-        if isinstance(v, list):
-            new_list = []
-            for item in v:
-                new_list.append(_update_environent_references(item))
-            new_context[k] = new_list
-    return new_context
+def _update_environent_references(context: Union[dict, str]) -> Union[dict, str]:
+    if isinstance(context, dict):
+        new_context = context.copy()
+        for k, v in new_context.items():
+            if isinstance(v, dict):
+                new_context[k] = _update_environent_references(v)
+            if isinstance(v, str):
+                new_context[k] = config.set_environment_value(v)
+            if isinstance(v, list):
+                new_list = []
+                for item in v:
+                    new_list.append(_update_environent_references(item))
+                new_context[k] = new_list
+        return new_context
+    return config.set_environment_value(context)
 
 
 def load_request_parameters_into_context(request, context):
@@ -49,6 +53,7 @@ def load_request_parameters_into_context(request, context):
 
 
 def serve_request(flow: Flow, my_context: dict) -> dict:  # pragma: no cover
+    start_time = time.time()
     work_id = ""
     try:
         work_id = my_context.get("work_id", "no_work_id")
@@ -77,7 +82,13 @@ def serve_request(flow: Flow, my_context: dict) -> dict:  # pragma: no cover
         logger.error(error_message)
         raise HTTPException(status_code=500, detail=error_message)
     finally:
-        logger.debug(f"Finished (ID:`{work_id}`)")
+        logger.info(
+            {
+                "event": "complete",
+                "seconds": (time.time() - start_time),
+                "request": work_id,
+            }
+        )
     return {"request": work_id}
 
 
