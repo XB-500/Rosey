@@ -1,5 +1,6 @@
 .gitignore
 .botignore
+dockerfile
 README.md
 requirements.tx
 TEMPLATE
