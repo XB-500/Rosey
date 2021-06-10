@@ -214,7 +214,7 @@ class SyncWithRepoOperator(BaseOperator):
                 branch_name=branch_name,
                 target_branch="main",
                 authentication_token=self.AUTH_TOKEN,  # type:ignore
-                title=f"sync with template",
+                title=f"synchronize with template @ {datetime.datetime.now().strftime('%Y%m%d')}",
                 comments=self.comments,
             )
 

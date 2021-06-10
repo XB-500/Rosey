@@ -16,7 +16,6 @@ def print_item(data):
     return data
 
 
-
 def sync_repos_flow(context):
 
     file_location = glob.glob("**/comments.txt", recursive=True).pop()
