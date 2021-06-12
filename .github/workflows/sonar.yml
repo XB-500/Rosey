@@ -1,6 +1,6 @@
 name: Regression Suite
 
-on: [push, pull_request, pull]
+on: [push, pull_request]
 
 jobs:
   regression_tests:
