@@ -218,7 +218,7 @@ class SyncWithRepoOperator(BaseOperator):
                 comments=self.comments,
             )
 
-        os.chdir("../..")
+        os.chdir("/app/src")
         temporary_folder.cleanup()
 
         return data, context
