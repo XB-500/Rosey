@@ -108,7 +108,7 @@ class StackDriverAdapter:
             formatted_filters.append(f"severity = {LEVELS_TO_STRING[filters.severity]}")
 
         if filters.system:
-            formatted_filters.append(f"labels.system = \"{filters.system}\"")
+            formatted_filters.append(f'labels.system = "{filters.system}"')
 
         for entry in logger.list_entries(
             filter_=" AND ".join(formatted_filters), order_by=DESCENDING
